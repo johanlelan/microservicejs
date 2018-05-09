@@ -1,0 +1,46 @@
+{
+  "name": "microservicejs",
+  "version": "1.0.0",
+  "description": "Example of DDD, CQRS Microservice with event-sourcing",
+  "main": "app.js",
+  "scripts": {
+    "lint": "node node_modules/.bin/eslint .",
+    "start": "node server.js",
+    "test": "cross-env NODE_ENV=test nyc -r lcov -r text-summary mocha --recursive './!(node_modules)/**/*.spec.js'",
+    "coverage": "npm test; node_modules/.bin/nyc report"
+  },
+  "author": "lelan-j@mgdis.fr",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.5.2",
+    "body-parser": "^1.18.2",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "express-pino-logger": "^3.0.1",
+    "lodash.isarray": "^4.0.0",
+    "lodash.map": "^4.6.0",
+    "lodash.sortby": "^4.7.0",
+    "passport": "^0.4.0",
+    "passport-http": "^0.3.0",
+    "pino": "^4.16.1",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-arrays": "^2.0.0",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.7.1",
+    "request": "^2.85.0",
+    "sinon": "^4.5.0"
+  },
+  "nyc": {
+    "exclude": [
+      "**/*.spec.js",
+      "build"
+    ]
+  }
+}

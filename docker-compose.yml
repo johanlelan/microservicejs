@@ -1,0 +1,42 @@
+version: '3'
+services:
+  bus:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  db:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+  pubsub-db:
+    image: rethinkdb:latest
+    ports:
+      - "38080:8080"
+  index:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.8
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+  graph-db:
+    image: orientdb:latest
+    container_name: orientdb
+    ports:
+      - "2424:2424"
+      - "2480:2480"
+    environment:
+      ORIENTDB_ROOT_PASSWORD: 'admin'
+  cache:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
