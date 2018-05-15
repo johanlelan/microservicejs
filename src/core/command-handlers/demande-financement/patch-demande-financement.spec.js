@@ -10,7 +10,7 @@ const DemandeFinancement = require('../../domain/demande-financement');
 const ErrorPermissions = require('../../domain/ErrorPermissions');
 
 //events
-const DemandeFinancementCreated = require('../../domain/events/demande-financement-created');
+const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
 
 const fakeLogger = {
   info: console.info,

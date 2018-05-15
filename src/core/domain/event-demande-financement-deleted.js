@@ -1,4 +1,4 @@
-const idGenerator = require('../utils/idGenerator');
+const idGenerator = require('./utils/idGenerator');
 
 class DemandeFinancementDeleted {
   constructor(aggregateId, author) {
@@ -6,7 +6,6 @@ class DemandeFinancementDeleted {
     this.aggregateId = aggregateId;
     this.author = author;
     this.timestamp = Date.now();
-    Object.freeze(this);
   }
 }
 

@@ -11,7 +11,7 @@ const fakeLogger = {
 }
 
 // events
-const DemandeFinancementCreated = require('../domain/events/demande-financement-created');
+const DemandeFinancementCreated = require('../domain/event-demande-financement-created');
 
 describe('Repository', () => {
   let repository;

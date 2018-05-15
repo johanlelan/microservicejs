@@ -4,9 +4,9 @@ const decisionProjection = require('./utils/decision-projection');
 // id
 const DemandeFinancementId = require('./demande-financement-id');
 // events
-const DemandeFinancementCreated = require('./events/demande-financement-created');
-const DemandeFinancementUpdated = require('./events/demande-financement-updated');
-const DemandeFinancementDeleted = require('./events/demande-financement-deleted');
+const DemandeFinancementCreated = require('./event-demande-financement-created');
+const DemandeFinancementUpdated = require('./event-demande-financement-updated');
+const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 
 exports.create = function create(publishEvent, author, content) {
   const demandeFinancementId = new DemandeFinancementId(idGenerator.generate());
