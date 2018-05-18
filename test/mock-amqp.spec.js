@@ -8,7 +8,7 @@ exports.channelStub = {
     };
   },
   sendToQueue: (queue, message, options) => {
-    console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
+    //console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
     return Promise.resolve();
   },
   prefetch: () => {

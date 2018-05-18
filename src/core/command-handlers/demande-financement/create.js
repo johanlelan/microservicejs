@@ -40,5 +40,10 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, permiss
 
     // invoking a function which is a part of the
     // aggregate defined in a domain model
-    return DemandeFinancement.create(publisher.publish, command.user, command.data);
+    const result = {};
+    DemandeFinancement.create(publisher.publish, command.user, command.data).forEach((event) => {
+      result.aggregateId = event.aggregateId;
+      publisher.publish(event);
+    });
+    return result;
   };

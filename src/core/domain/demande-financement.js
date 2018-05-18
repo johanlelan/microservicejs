@@ -1,3 +1,5 @@
+// An aggregate + a command should return a array of events
+
 const idGenerator = require('./utils/idGenerator');
 const decisionProjection = require('./utils/decision-projection');
 
@@ -5,19 +7,17 @@ const decisionProjection = require('./utils/decision-projection');
 const DemandeFinancementId = require('./demande-financement-id');
 // events
 const DemandeFinancementCreated = require('./event-demande-financement-created');
-const DemandeFinancementUpdated = require('./event-demande-financement-updated');
+const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 
-exports.create = function create(publishEvent, author, content) {
-  const demandeFinancementId = new DemandeFinancementId(idGenerator.generate());
-  publishEvent(new DemandeFinancementCreated(demandeFinancementId, author, content));
-  return demandeFinancementId;
-};
-
-exports.patch = function patch(publishEvent, id, author, opPatch) {
-  const demandeFinancementId = new DemandeFinancementId(id);
-  publishEvent(new DemandeFinancementUpdated(demandeFinancementId, author, opPatch));
-  return demandeFinancementId;
+exports.create = function create(author, content) {
+  return [
+    new DemandeFinancementCreated(
+      new DemandeFinancementId(idGenerator.generate()),
+      author,
+      content,
+    ),
+  ];
 };
 
 const DemandeFinancement = function DemandeFinancement(events) {
@@ -25,26 +25,38 @@ const DemandeFinancement = function DemandeFinancement(events) {
 
   decisionProjection.create()
     .register(DemandeFinancementCreated, (event) => {
-      this.demandeFinancementId = event.aggregateId;
-      this.author = event.author;
+      self.aggregateId = event.aggregateId;
+      self.author = event.author;
+      Object.keys(event.content).forEach((key) => {
+        // should not manage properties
+        // aggregateId, author
+        self[key] = event.content[key];
+      });
     })
-    .register(DemandeFinancementUpdated, (event) => {
-      this.author = event.author;
-      this.patch = event.patch;
-      this.isUpdated = true;
+    .register(MontantDemandeAdded, (event) => {
+      self.author = event.author;
+      self.montant = event.montant;
+      self.isUpdated = true;
     })
     .register(DemandeFinancementDeleted, (event) => {
-      this.author = event.author;
-      this.isDeleted = true;
+      self.author = event.author;
+      self.isDeleted = true;
     })
     .apply(events);
 
-  self.delete = function remove(publishEvent, deleter) {
-    if (self.isDeleted) {
-      // already deleted for idempotency
-      return;
+  self.delete = function remove(deleter) {
+    if (!self.isDeleted) {
+      return [
+        new DemandeFinancementDeleted(self.aggregateId, deleter),
+      ];
     }
-    publishEvent(new DemandeFinancementDeleted(self.demandeFinancementId, deleter));
+    return [];
+  };
+
+  self.ajouterMontantDemande = function ajouterMontantDemande(id, author, current, montant) {
+    return [
+      new MontantDemandeAdded(self.aggregateId, author, montant),
+    ];
   };
 };
 

@@ -7,19 +7,14 @@ const DemandeFinancementId = require('./demande-financement-id');
 
 // events
 const DemandeFinancementCreated = require('./event-demande-financement-created');
-const DemandeFinancementUpdated = require('./event-demande-financement-updated');
+const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 
 chai.use(assertArrays);
 
-let eventsRaised = [];
-const publishEvent = function publishEvent(evt) {
-  eventsRaised.push(evt);
-};
-
 describe('Demande-financement Aggregate', () => {
   const author = 'author@example.fr';
-  const demandeFinancementContent = 'Hello';
+  const demandeFinancementContent = { say: 'Hello' };
   let demandeFinancementId = new DemandeFinancementId('demandeFinancementA');
 
   beforeEach(() => {
@@ -33,7 +28,7 @@ describe('Demande-financement Aggregate', () => {
   });
 
   it('When create demandeFinancement Then raise DemandeFinancementCreated', () => {
-    DemandeFinancement.create(publishEvent, author, demandeFinancementContent);
+    const eventsRaised = DemandeFinancement.create(author, demandeFinancementContent);
 
     chai.expect(eventsRaised).to.have.length(1);
     const event = eventsRaised[0];
@@ -45,8 +40,9 @@ describe('Demande-financement Aggregate', () => {
   });
 
   it('When create several demandeFinancements Then demandeFinancementId is not same', () => {
-    DemandeFinancement.create(publishEvent, author, demandeFinancementContent);
-    DemandeFinancement.create(publishEvent, author, demandeFinancementContent);
+    const eventsRaised = [];
+    DemandeFinancement.create(author, demandeFinancementContent).forEach(event => eventsRaised.push(event));
+    DemandeFinancement.create(author, demandeFinancementContent).forEach(event => eventsRaised.push(event));
 
     chai.expect(eventsRaised[0].aggregateId)
       .not
@@ -54,44 +50,35 @@ describe('Demande-financement Aggregate', () => {
       .equal(eventsRaised[1].aggregateId);
   });
 
-  it('When create demandeFinancement Then return demandeFinancementId', () => {
-    const result = DemandeFinancement.create(publishEvent, author, demandeFinancementContent);
-
-    chai.expect(result).to.equal(eventsRaised[0].aggregateId);
-  });
-
-  it('When create DemandeFinancementCreated Then getAggregateId return demandeFinancementId', () => {
-    const event = new DemandeFinancementCreated(new DemandeFinancementId('M2'), author, demandeFinancementContent);
-
-    chai.expect(event.aggregateId).to.equal(event.aggregateId);
+  it('When create demandeFinancement Then return an event with demandeFinancementId as aggregateId', () => {
+    const events = DemandeFinancement.create(author, demandeFinancementContent);
+    chai.expect(events).to.have.length(1);
+    chai.expect(events[0]).to.have.property('aggregateId');
+    chai.expect(events[0].aggregateId).to.be.instanceOf(DemandeFinancementId);
   });
 
   it('When create DemandeFinancementCreated Then aggregateId is demandeFinancementId', () => {
-    const event = new DemandeFinancementCreated(demandeFinancementId, author);
+    const demandeFinancementId = new DemandeFinancementId('M2');
+    const event = new DemandeFinancementCreated(demandeFinancementId, author, demandeFinancementContent);
 
-    chai.expect(event.aggregateId).to.equal(event.aggregateId);
-  });
-
-  it('When create demandeFinancementDeleted Then aggregateId is demandeFinancementId', () => {
-    const event = new DemandeFinancementDeleted(demandeFinancementId);
-
-    chai.expect(event.aggregateId).to.equal(event.aggregateId);
+    chai.expect(event.aggregateId).to.equal(demandeFinancementId);
   });
 
   it('When delete Then raise demandeFinancementDeleted', () => {
+    const deleteDemandeFinancementId = new DemandeFinancementId('deleteId');
     const userDemandeFinancement = DemandeFinancement.createFromEvents([
       new DemandeFinancementCreated(
-        demandeFinancementId,
+        deleteDemandeFinancementId,
         author,
-        demandeFinancementContent,
+        { say: 'Hello' },
       ),
     ]);
     const deleter = author;
 
-    userDemandeFinancement.delete(publishEvent, deleter);
+    const eventsRaised = userDemandeFinancement.delete(deleter);
 
     const expectedEvent =
-      new DemandeFinancementDeleted(demandeFinancementId, deleter);
+      new DemandeFinancementDeleted(deleteDemandeFinancementId, deleter);
     chai.expect(eventsRaised).to.be.ofSize(1);
     chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
   });
@@ -106,27 +93,26 @@ describe('Demande-financement Aggregate', () => {
       new DemandeFinancementDeleted(demandeFinancementId, author),
     ]);
 
-    userDemandeFinancement.delete(publishEvent, author);
+    const eventsRaised = userDemandeFinancement.delete(author);
 
     chai.expect(eventsRaised).to.have.length(0);
   });
 
 
-  it('When create demandeFinancementUpdated Then aggregateId is demandeFinancementId', () => {
-    const event = new DemandeFinancementUpdated(demandeFinancementId);
+  it('When create MontantDemandeAdded Then aggregateId is demandeFinancementId', () => {
+    const event = new MontantDemandeAdded(demandeFinancementId);
 
     chai.expect(event.aggregateId).to.equal(event.aggregateId);
   });
 
-  it('Given patch demandeFinancement When demandeFinancement is updated', () => {
+  it('Given montant When "montant" of demandeFinancement is set', () => {
     const userDemandeFinancement = DemandeFinancement.createFromEvents([
       new DemandeFinancementCreated(
         demandeFinancementId,
         author,
         demandeFinancementContent,
       ),
-      new DemandeFinancementUpdated(demandeFinancementId, author, 
-        { op: 'add', path: 'title', value: 'new title' }),
+      new MontantDemandeAdded(demandeFinancementId, author, 123.56),
     ]);
 
     chai.assert.isOk(userDemandeFinancement.isUpdated);

@@ -1,5 +1,5 @@
 const DemandeFinancement = require('../../domain/demande-financement');
-const CreateDemandeFinancementCommand = require('./create-demande-financement')(DemandeFinancement);
+const CreateDemandeFinancementCommand = require('./create')(DemandeFinancement);
 const chai = require('chai');
 
 describe('Create-Demande-financement Command', () => {

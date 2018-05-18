@@ -1,13 +1,13 @@
 const idGenerator = require('./utils/idGenerator');
 
-class DemandeFinancementUpdated {
-  constructor(aggregateId, author, patch) {
+class MontantDemandeAdded {
+  constructor(aggregateId, author, montant) {
     this.id = idGenerator.generate();
     this.aggregateId = aggregateId;
     this.author = author;
     this.timestamp = Date.now();
-    this.patch = patch;
+    this.montant = montant;
   }
 }
 
-module.exports = DemandeFinancementUpdated;
+module.exports = MontantDemandeAdded;

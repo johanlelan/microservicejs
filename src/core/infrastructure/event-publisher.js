@@ -22,7 +22,7 @@ const EventPublisher = function EventPublisher(logger) {
 
     const eventName = event.constructor.name;
     eventEmitter.emit(eventName, event);
-    logger.info(`Emit ${eventName} event`);
+    logger.info(`publish - emit ${eventName} event`);
   };
 };
 

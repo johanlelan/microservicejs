@@ -8,7 +8,11 @@ const sinon = require('sinon');
 const app = require('./app');
 const handlers = require('../core/command-handlers/index');
 
-const logger = require('../core/infrastructure/logger');
+const logger = {
+  debug: () => (undefined), //console.debug,
+  info: () => (undefined), //console.info,
+  warn: () => (undefined), //console.warn,
+}
 const eventStore = require('../core/infrastructure/event-store').create(logger);
 const publisher = require('../core/infrastructure/event-publisher').create(logger);
 
@@ -41,7 +45,7 @@ describe('REST API', () => {
         // create command handler
         handlers(eventStore, publisher, logger, channel)
         .then(commandHandler => {
-          console.log('[HTTP] start express app');
+          //console.log('[HTTP] start express app');
           return app.run(commandHandler, donePreparing)
         });
       });
@@ -113,10 +117,10 @@ describe('REST API', () => {
       done(err);
     });
   });
-  it('Should return 404 when unkonwn Demande-Financement', (done) => {
+  it('Should return 404 on MontantDemande when unkonwn Demande-Financement', (done) => {
     const options = {
-      method: 'PATCH',
-      uri: 'http://localhost:3000/demandes-financement/unknown',
+      method: 'PUT',
+      uri: 'http://localhost:3000/demandes-financement/unknown/montantDemande',
       json: [],
       headers: {
         'X-Request-Id': '4'
@@ -146,7 +150,7 @@ describe('REST API', () => {
       },
     };
     return request(options, (err, resp, body) => {
-      chai.expect(body).have.property('id');
+      chai.expect(body).have.property('aggregateId');
       done(err);
     }).auth(username, password);
   });
@@ -169,7 +173,7 @@ describe('REST API', () => {
     }).auth(username, password);
   });
 
-  it('Patch Demande Financement', (done) => {
+  it('Add MontantDemande to an existing DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
       uri: 'http://localhost:3000/demandes-financement',
@@ -185,11 +189,11 @@ describe('REST API', () => {
       },
     };
     return request(options, (err, resp, body) => {
-      chai.expect(body).have.property('id');
+      chai.expect(body).have.property('aggregateId');
       const location = resp.headers.location;
-      const patchOptions = {
-        method: 'PATCH',
-        uri: 'http://localhost:3000' + location,
+      const montantDemandeOptions = {
+        method: 'PUT',
+        uri: 'http://localhost:3000' + location + '/montantDemande',
         json: [
           { op: 'add', path: '/title', value: 'my title' },
           { op: 'replace', path: '/motant/ttc', value: 6543.21 }
@@ -198,14 +202,49 @@ describe('REST API', () => {
           'X-Request-Id': '7.1'
         },
       };
-      return request(patchOptions, (err, resp, body) => {
-        chai.expect(body).have.property('id');
+      return request(montantDemandeOptions, (err, resp, body) => {
+        chai.expect(resp).have.property('statusCode', 202);
         done(err);
       }).auth(username, password);
     }).auth(username, password);
   });
 
-  it('Patch Demande Financement with invalid body', (done) => {
+  it('Add an invalid MontantDemande to an existing DemandeFinancement', (done) => {
+    const options = {
+      method: 'POST',
+      uri: 'http://localhost:3000/demandes-financement',
+      body: {
+        objet: 'Demande de financement',
+        montantDemande: {
+          ttc: 1234.56,
+        },
+      },
+      json: true,
+      headers: {
+        'X-Request-Id': '8'
+      },
+    };
+    return request(options, (err, resp, body) => {
+      chai.expect(body).have.property('aggregateId');
+      const location = resp.headers.location;
+      const montantDemandeOptions = {
+        method: 'PUT',
+        uri: 'http://localhost:3000' + location + '/montantDemande',
+        json: { ttc: -1 },
+        headers: {
+          'X-Request-Id': '8.1'
+        },
+      };
+      return request(montantDemandeOptions, (err, resp, body) => {
+        chai.expect(resp).have.property('statusCode', 400);
+        chai.expect(body).have.property('detail');
+        chai.expect(body.detail).have.property('message', 'Could not set a negative "MontantDemande"');
+        done(err);
+      }).auth(username, password);
+    }).auth(username, password);
+  });
+
+  it('Delete a DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
       uri: 'http://localhost:3000/demandes-financement',
@@ -217,24 +256,70 @@ describe('REST API', () => {
       },
       json: true,
       headers: {
-        'X-Request-Id': '8'
+        'X-Request-Id': '9'
       },
     };
     return request(options, (err, resp, body) => {
-      chai.expect(body).have.property('id');
+      chai.expect(body).have.property('aggregateId');
       const location = resp.headers.location;
-      const patchOptions = {
-        method: 'PATCH',
+      const deleteDemandeFinancementOptions = {
+        method: 'DELETE',
         uri: 'http://localhost:3000' + location,
-        json: {},
         headers: {
-          'X-Request-Id': '8.1'
+          'X-Request-Id': '9.1'
         },
       };
-      return request(patchOptions, (err, resp, body) => {
-        chai.expect(resp).have.property('statusCode', 400);
-        chai.expect(body).have.property('detail');
-        chai.expect(body.detail).have.property('message', 'Command is invalid');
+      return request(deleteDemandeFinancementOptions, (err, resp, body) => {
+        chai.expect(resp).have.property('statusCode', 204);
+        done(err);
+      }).auth(username, password);
+    }).auth(username, password);
+  });
+
+  it('Should return 204 on DELETE when unkonwn Demande-Financement', (done) => {
+    const options = {
+      method: 'DELETE',
+      uri: 'http://localhost:3000/demandes-financement/unknown',
+      json: [],
+      headers: {
+        'X-Request-Id': '10'
+      },
+    };
+    return request(options, (err, resp, body) => {
+      chai.expect(err).to.be.null;
+      chai.expect(resp).have.property('statusCode');
+      chai.expect(resp.statusCode).to.equal(204);
+      done(err);
+    }).auth(username, password);
+  });
+  
+  it('Get a DemandeFinancement', (done) => {
+    const options = {
+      method: 'POST',
+      uri: 'http://localhost:3000/demandes-financement',
+      body: {
+        objet: 'Demande de financement',
+        montant: {
+          ttc: 1234.56,
+        },
+      },
+      json: true,
+      headers: {
+        'X-Request-Id': '11'
+      },
+    };
+    return request(options, (err, resp, body) => {
+      chai.expect(body).have.property('aggregateId');
+      const location = resp.headers.location;
+      const getDemandeFinancementOptions = {
+        method: 'GET',
+        uri: 'http://localhost:3000' + location,
+        headers: {
+          'X-Request-Id': '11.1'
+        },
+      };
+      return request(getDemandeFinancementOptions, (err, resp, body) => {
+        chai.expect(resp).have.property('statusCode', 200);
         done(err);
       }).auth(username, password);
     }).auth(username, password);

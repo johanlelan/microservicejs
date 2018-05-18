@@ -13,7 +13,7 @@ const ErrorPermissions = require('../../domain/ErrorPermissions');
 const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
 
 const fakeLogger = {
-  info: console.info,
+  info: () => (undefined), //console.info,
 }
 const fakeEventStore = eventsStoreModule.create(fakeLogger);
 const fakePublisher = eventPublisherModule.create(fakeLogger);
@@ -26,22 +26,22 @@ const fakeRepository = {
   }
 };
 const fakePermissionAuthority = {
-  canCreateDemandeFinancement: function getById() {
+  canCreateDemandeFinancement: function canCreateDemandeFinancement() {
     throw new ErrorPermissions('Test error management');
   },
-  canPatchDemandeFinancement: function getAllEvents() {
+  canAddMontantDemande: function canAddMontantDemande() {
     throw new ErrorPermissions('Test error management');
   }
 };
 
-let PatchDemandeFinancementCommand = require('./patch-demande-financement')
+let AddMontantDemandeCommand = require('./add-montant-demande')
   (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
 
-describe('Patch-Demande-financement Command', () => {
+describe('Add "Montant Demande" Command', () => {
   describe('Command Validation', () => {
     it('When command have no name Then return an error', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({});
+        const result = await AddMontantDemandeCommand({});
         chai.assert.fail(result);
       } catch (err) {
         chai.assert.isOk(true);
@@ -49,8 +49,8 @@ describe('Patch-Demande-financement Command', () => {
     });
     it('When command have no timestamp Then return an error', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({
-          name: 'patchDemandeFinancement',
+        const result = await AddMontantDemandeCommand({
+          name: 'addMontantDemande',
         });
         chai.assert.fail(result);
       } catch (err) {
@@ -59,8 +59,8 @@ describe('Patch-Demande-financement Command', () => {
     });
     it('When command have no user Then return an error', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({
-          name: 'patchDemandeFinancement',
+        const result = await AddMontantDemandeCommand({
+          name: 'addMontantDemande',
           timestamp: Date.now(),
         });
         chai.assert.fail(result);
@@ -70,8 +70,8 @@ describe('Patch-Demande-financement Command', () => {
     });
     it('When command have id Then return an error', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({
-          name: 'patchDemandeFinancement',
+        const result = await AddMontantDemandeCommand({
+          name: 'addMontantDemande',
           timestamp: Date.now(),
           user: {
             id: 'test-user@example.js'
@@ -84,8 +84,8 @@ describe('Patch-Demande-financement Command', () => {
     });
     it('When data are not an array Then return an error', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({
-          name: 'patchDemandeFinancement',
+        const result = await AddMontantDemandeCommand({
+          name: 'addMontantDemande',
           timestamp: Date.now(),
           user: {
             id: 'test-user@example.js'
@@ -107,26 +107,23 @@ describe('Patch-Demande-financement Command', () => {
           'me@example.fr', 
           {}
         ));
-      PatchDemandeFinancementCommand = require('./patch-demande-financement')
+      AddMontantDemandeCommand = require('./add-montant-demande')
       (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
     });
-    it('When Patch a read-only-property Then Fail', async () => {
+    it('When permission is deny Then Fail', async () => {
       try {
-        const result = await PatchDemandeFinancementCommand({
-          name: 'patchDemandeFinancement',
+        const result = await AddMontantDemandeCommand({
+          name: 'addMontantDemande',
           timestamp: Date.now(),
           user: {
             id: 'privileges-decision@example.com',
           },
           id: 'abcdef',
-          data: [
-            { op: 'add', path: '/readOnlyProperty', value: 'a value' },
-            { op: 'add', path: '/otherProperty', value: 'another value' },
-          ]
+          data: [],
         });
         chai.assert.fail(result);
       } catch (err) {
-        chai.assert.isOk(true);
+        chai.assert.equal(err.name, 'ErrorPermissions');
       }
     });
   });

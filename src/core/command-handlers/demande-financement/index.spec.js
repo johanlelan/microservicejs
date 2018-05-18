@@ -6,7 +6,8 @@ const DemandeFinancementCreated = require('../../domain/event-demande-financemen
 
 const mockEventStore = {
   append: (event) => {
-    console.log('Append event', event);
+    // nothing to do
+    // console.log('Append event', event);
   },
   getEventsOfAggregate: (id) => {
     return [
@@ -17,16 +18,18 @@ const mockEventStore = {
 
 const mockPublisher = {
   publish: (event) => {
-    console.log('Publish event', event);
+    // nothing to do
+    // console.log('Publish event', event);
   },
   onAny: (event) => {
-    console.log('onAny event', event);
+    // nothing to do
+    // console.log('onAny event', event);
   },
 }
 
 const mockLogger = {
-  info: console.info,
-  warn: console.warn,
+  info: () => (undefined), //console.info,
+  warn: () => (undefined), //console.warn,
 }
 
 const mockChannel = require('../../../../test/mock-amqp.spec').channelStub;
@@ -56,7 +59,7 @@ describe('Demande-financement Commands', () => {
     });
   });
 
-  it('Should manage patchDemandeFinancement bus commands', () => {
+  it('Should manage addMontantDemande bus commands', () => {
     return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
     .then(commandHandler => {
 
@@ -71,17 +74,47 @@ describe('Demande-financement Commands', () => {
           correlationId: 'mockAMQPMessage',
         },
         payload: {
-          name: 'patchDemandeFinancement',
+          name: 'addMontantDemande',
           timestamp: Date.now(),
           user: {
             id: 'any-user@example.com',
           },
           id: {
-            id: 'test patch from message bus',
+            id: 'test addMontantDemande from message bus',
           },
-          data: [
-            { op: 'add', path: '/otherProperty', value: 'another value' },
-          ]
+          data: {
+            ttc: 890.67,
+          }
+        },
+      }).then(result => {
+        chai.assert.isOk(result);
+      });
+    });
+  });
+
+  it('Should manage deleteDemandeFinancement bus commands', () => {
+    return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
+    .then(commandHandler => {
+
+      const busMessageHandler = buildCommandHandler.buildMessageHandler(commandHandler, {
+        isConnected: true,
+        sendToQueue: () => { return chai.assert.isOk(true); }
+      }, mockLogger);
+
+      busMessageHandler({
+        properties: {
+          replyTo: 'test-queue',
+          correlationId: 'mockAMQPMessage',
+        },
+        payload: {
+          name: 'deleteDemandeFinancement',
+          timestamp: Date.now(),
+          user: {
+            id: 'any-user@example.com',
+          },
+          id: {
+            id: 'test deleteDemandeFinancement from message bus',
+          }
         },
       }).then(result => {
         chai.assert.isOk(result);

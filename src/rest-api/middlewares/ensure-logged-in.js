@@ -6,8 +6,8 @@ const PassportHttp = require('passport-http');
 
 // TODO JLL: temporary use fix users list
 const users = [
-  { id: 'guest', password: 'tseug' },
-  { id: 'admin', password: 'nimda' },
+  { id: 'guest', title: 'Guest', password: 'tseug' },
+  { id: 'admin', title: 'Admin', password: 'nimda' },
 ];
 
 passport.use(new PassportHttp.BasicStrategy(((userid, password, done) => {
@@ -18,7 +18,10 @@ passport.use(new PassportHttp.BasicStrategy(((userid, password, done) => {
   if (currentUser.password !== password) {
     return done(null, false);
   }
-  return done(null, currentUser);
+  return done(null, {
+    id: currentUser.id,
+    title: currentUser.title,
+  });
 })));
 
 module.exports = function ensureLoggedIn(req, res, next) {

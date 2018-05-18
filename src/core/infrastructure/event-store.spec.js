@@ -11,7 +11,7 @@ const EventDontContainsAuthor = require('./EventDontContainsAuthor');
 const EventDontContainsTimestamp = require('./EventDontContainsTimestamp');
 
 const fakeLogger = {
-  info: console.info,
+  info: () => (undefined), //console.info,
 }
 chai.use(assertArrays);
 

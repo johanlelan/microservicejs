@@ -7,7 +7,7 @@ const ErrorNotFound = require('./ErrorNotFound');
 const DemandeFinancementId = require('../domain/demande-financement-id');
 
 const fakeLogger = {
-  info: console.info,
+  info: () => (undefined), //console.info,
 }
 
 // events
@@ -34,10 +34,15 @@ describe('Repository', () => {
 
   it('Given several events When GetById Then Return DemandeFinancement', () => {
     const defId = new DemandeFinancementId('def1');
+    const eventCreated = new DemandeFinancementCreated(defId,
+      'demande-financement-repository@example.com',
+      { any: 'content' });
+      eventsStore.append(eventCreated);
     const newDemandeFinancement = DemandeFinancement.createFromEvents([
-      new DemandeFinancementCreated(defId, 'demande-financement-repository@example.com', 'any-content'),
+      eventCreated,
     ]);
-    newDemandeFinancement.delete(publishEvent, 'deleter@example.com');
+    const eventsRaised = newDemandeFinancement.delete('deleter@example.com');
+    eventsRaised.forEach(event => eventsStore.append(event));
 
     const demandeFinancementFromRepository = repository.getById(defId);
     chai.expect(demandeFinancementFromRepository.toString())

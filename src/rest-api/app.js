@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
 
+const DemandeFinancementId = require('../core/domain/demande-financement-id');
+
 debug('Starting HTTP endpoints');
 
 const app = express();
@@ -21,9 +23,9 @@ function runApp(commandHandler, callback) {
     if (!req.headers['x-request-id']) {
       throw new HTTPRequestShouldHaveXRequestID('All incoming HTTP requests should have X-Request-Id header');
     }
-    debug(`Starting on ${req.method} ${req.originalUrl} ${req.headers['x-request-id']}`);
+    debug(`${req.headers['x-request-id']} - Starting request ${req.method} ${req.originalUrl}`);
     next();
-    debug(`Ending ${req.headers['x-request-id']}`);
+    debug(`${req.headers['x-request-id']} - Ending request ${req.method} ${req.originalUrl}`);
   });
 
   app.post(
@@ -38,26 +40,54 @@ function runApp(commandHandler, callback) {
       };
 
       return commandHandler.demandeFinancement.create(command).then((result) => {
-        res.setHeader('Location', `/demandes-financement/${result.id}`);
+        res.setHeader('Location', `/demandes-financement/${result.aggregateId.id}`);
         res.status(201).json(result);
       }).catch(next);
     },
   );
 
-  app.patch(
-    '/demandes-financement/:identifier', ensureLoggedIn,
+  app.put(
+    '/demandes-financement/:identifier/montantDemande', ensureLoggedIn,
     (req, res, next) => {
       // create command
       const command = {
-        name: 'patchDemandeFinancement',
+        name: 'addMontantDemande',
         timestamp: Date.now(),
         user: req.user,
         id: req.params.identifier,
         data: req.body,
       };
 
-      return commandHandler.demandeFinancement.patch(command).then((result) => {
-        res.status(200).json(result);
+      return commandHandler.demandeFinancement.addMontantDemande(command).then(() => {
+        res.status(202).json(req.body);
+      }).catch(next);
+    },
+  );
+
+  app.get(
+    '/demandes-financement/:identifier',
+    ensureLoggedIn,
+    (req, res) => {
+      const aggregate = commandHandler.demandeFinancement.getRepository()
+        .getById(new DemandeFinancementId(req.params.identifier));
+      res.status(200).json(aggregate);
+    },
+  );
+
+  app.delete(
+    '/demandes-financement/:identifier',
+    ensureLoggedIn,
+    (req, res, next) => {
+      // create command
+      const command = {
+        name: 'deleteDemandeFinancement',
+        timestamp: Date.now(),
+        user: req.user,
+        id: req.params.identifier,
+      };
+
+      return commandHandler.demandeFinancement.delete(command).then(() => {
+        res.status(204).json(req.body);
       }).catch(next);
     },
   );

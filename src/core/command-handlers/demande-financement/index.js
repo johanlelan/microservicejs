@@ -1,6 +1,7 @@
 const DemandeFinancement = require('../../domain/demande-financement');
-const createDemandeFinancement = require('./create-demande-financement');
-const patchDemandeFinancement = require('./patch-demande-financement');
+const createDemandeFinancement = require('./create');
+const addMontantDemande = require('./add-montant-demande');
+const deleteDemandeFinancement = require('./delete');
 const permissions = require('../../domain/permissions');
 
 const demandeFinancementRepository = require('../../repositories/repository');
@@ -24,8 +25,11 @@ exports.buildMessageHandler = (commandHandler, channel, logger) => (msg) => {
     case 'createDemandeFinancement':
       promises.push(commandHandler.create(command));
       break;
-    case 'patchDemandeFinancement':
-      promises.push(commandHandler.patch(command));
+    case 'addMontantDemande':
+      promises.push(commandHandler.addMontantDemande(command));
+      break;
+    case 'deleteDemandeFinancement':
+      promises.push(commandHandler.delete(command));
       break;
     default:
       logger.warn(`Nothing to do with ${command.name}`);
@@ -41,6 +45,7 @@ exports.create = function create(eventStore, publisher, logger, channel) {
   const repository = demandeFinancementRepository.create(DemandeFinancement, eventStore);
   // every published demande-financement events should be sent to bus
   const commandHandler = {
+    getRepository: () => repository,
     create: createDemandeFinancement(
       DemandeFinancement,
       repository,
@@ -49,7 +54,15 @@ exports.create = function create(eventStore, publisher, logger, channel) {
       permissions,
       logger,
     ),
-    patch: patchDemandeFinancement(
+    addMontantDemande: addMontantDemande(
+      DemandeFinancement,
+      repository,
+      eventStore,
+      publisher,
+      permissions,
+      logger,
+    ),
+    delete: deleteDemandeFinancement(
       DemandeFinancement,
       repository,
       eventStore,
