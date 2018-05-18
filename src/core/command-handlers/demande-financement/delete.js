@@ -28,7 +28,7 @@ const validate = (command) => {
   }
   throw new ErrorValidation('Command is invalid', { message: 'Command is invalid', errors });
 };
-module.exports = (DemandeFinancement, repository, eventStore, publisher, permissions, logger) =>
+module.exports = (DemandeFinancement, repository, eventStore, publisher, logger) =>
   async function deleteDemandeFinancement(command) {
   // validate inputs
     try {
@@ -52,7 +52,7 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, permiss
     // invoking a function which is a part of the
     // aggregate defined in a domain model
     // authorize user
-    permissions.canDeleteDemandeFinancement(command.user, current, command.data);
+    DemandeFinancement.canDeleteDemandeFinancement(command.user, current, command.data);
     logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
     const events = current.delete(command.user);
     events.forEach(event => publisher.publish(event));

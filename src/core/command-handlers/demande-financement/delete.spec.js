@@ -2,6 +2,7 @@ const chai = require('chai');
 
 const eventsStoreModule = require('../../infrastructure/event-store');
 const eventPublisherModule = require('../../infrastructure/event-publisher');
+const repositoryModule = require('../../repositories/repository');
 
 const DemandeFinancementId = require('../../domain/demande-financement-id');
 const DemandeFinancement = require('../../domain/demande-financement');
@@ -17,25 +18,10 @@ const fakeLogger = {
 }
 const fakeEventStore = eventsStoreModule.create(fakeLogger);
 const fakePublisher = eventPublisherModule.create(fakeLogger);
-const fakeRepository = {
-  getById: function getById() {
-    return {};
-  },
-  getAllEvents: function getAllEvents() {
-    return [];
-  }
-};
-const fakePermissionAuthority = {
-  canCreateDemandeFinancement: function canCreateDemandeFinancement() {
-    throw new ErrorPermissions('Test error management');
-  },
-  canDeleteDemandeFinancement: function canDeleteDemandeFinancement() {
-    throw new ErrorPermissions('Test error management');
-  }
-};
+const fakeRepository = repositoryModule.create(DemandeFinancement, fakeEventStore);
 
 let DeleteDemandeFinancement = require('./delete')
-  (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
+  (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
 
 describe('Delete DemandeFinancement Command', () => {
   describe('Command Validation', () => {
@@ -82,21 +68,6 @@ describe('Delete DemandeFinancement Command', () => {
         chai.assert.isOk(true);
       }
     });
-    it('When data are not an array Then return an error', async () => {
-      try {
-        const result = await DeleteDemandeFinancement({
-          name: 'deleteDemandeFinancement',
-          timestamp: Date.now(),
-          user: {
-            id: 'test-user@example.js'
-          },
-          id: '12345'
-        });
-        chai.assert.fail(result);
-      } catch (err) {
-        chai.assert.isOk(true);
-      }
-    });
   });
 
   describe('Permissions', () => {
@@ -104,13 +75,16 @@ describe('Delete DemandeFinancement Command', () => {
       fakeEventStore.append(
         new DemandeFinancementCreated(
           new DemandeFinancementId('abcdef'), 
-          'me@example.fr', 
+          {
+            id: 'me@example.fr',
+            title: 'me',
+          },
           {}
         ));
       DeleteDemandeFinancement = require('./delete')
-      (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
+      (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
     });
-    it('When permission is deny Then Fail', async () => {
+    it('When deleter is different from author Then deletion is deny', async () => {
       try {
         const result = await DeleteDemandeFinancement({
           name: 'deleteDemandeFinancement',

@@ -168,7 +168,7 @@ describe('REST API', () => {
       },
     };
     return request(options, (err, resp, body) => {
-      chai.expect(resp).have.property('statusCode', 400);
+      chai.expect(resp).have.property('statusCode', 422);
       done(err);
     }).auth(username, password);
   });
@@ -236,7 +236,7 @@ describe('REST API', () => {
         },
       };
       return request(montantDemandeOptions, (err, resp, body) => {
-        chai.expect(resp).have.property('statusCode', 400);
+        chai.expect(resp).have.property('statusCode', 422);
         chai.expect(body).have.property('detail');
         chai.expect(body.detail).have.property('message', 'Could not set a negative "MontantDemande"');
         done(err);

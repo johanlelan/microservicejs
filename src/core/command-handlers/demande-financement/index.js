@@ -2,7 +2,6 @@ const DemandeFinancement = require('../../domain/demande-financement');
 const createDemandeFinancement = require('./create');
 const addMontantDemande = require('./add-montant-demande');
 const deleteDemandeFinancement = require('./delete');
-const permissions = require('../../domain/permissions');
 
 const demandeFinancementRepository = require('../../repositories/repository');
 
@@ -51,7 +50,6 @@ exports.create = function create(eventStore, publisher, logger, channel) {
       repository,
       eventStore,
       publisher,
-      permissions,
       logger,
     ),
     addMontantDemande: addMontantDemande(
@@ -59,7 +57,6 @@ exports.create = function create(eventStore, publisher, logger, channel) {
       repository,
       eventStore,
       publisher,
-      permissions,
       logger,
     ),
     delete: deleteDemandeFinancement(
@@ -67,7 +64,6 @@ exports.create = function create(eventStore, publisher, logger, channel) {
       repository,
       eventStore,
       publisher,
-      permissions,
       logger,
     ),
   };

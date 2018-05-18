@@ -25,7 +25,7 @@ const validate = (command) => {
   throw new ErrorValidation('Command is invalid', { message: 'Command is invalid', errors });
 };
 
-module.exports = (DemandeFinancement, repository, eventStore, publisher, permissions, logger) =>
+module.exports = (DemandeFinancement, repository, eventStore, publisher, logger) =>
   async function CreateDemandeFinancement(command) {
   // validate inputs
     try {
@@ -35,13 +35,13 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, permiss
     }
 
     // authorize user
-    permissions.canCreateDemandeFinancement(command.user, command.data);
+    DemandeFinancement.canCreateDemandeFinancement(command.user, command.data);
     logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name}`);
 
     // invoking a function which is a part of the
     // aggregate defined in a domain model
     const result = {};
-    DemandeFinancement.create(publisher.publish, command.user, command.data).forEach((event) => {
+    DemandeFinancement.create(command.user, command.data).forEach((event) => {
       result.aggregateId = event.aggregateId;
       publisher.publish(event);
     });

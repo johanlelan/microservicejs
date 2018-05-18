@@ -25,17 +25,9 @@ const fakeRepository = {
     return [];
   }
 };
-const fakePermissionAuthority = {
-  canCreateDemandeFinancement: function canCreateDemandeFinancement() {
-    throw new ErrorPermissions('Test error management');
-  },
-  canAddMontantDemande: function canAddMontantDemande() {
-    throw new ErrorPermissions('Test error management');
-  }
-};
 
 let AddMontantDemandeCommand = require('./add-montant-demande')
-  (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
+  (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
 
 describe('Add "Montant Demande" Command', () => {
   describe('Command Validation', () => {
@@ -108,7 +100,7 @@ describe('Add "Montant Demande" Command', () => {
           {}
         ));
       AddMontantDemandeCommand = require('./add-montant-demande')
-      (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakePermissionAuthority, fakeLogger);
+      (DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
     });
     it('When permission is deny Then Fail', async () => {
       try {
@@ -119,11 +111,13 @@ describe('Add "Montant Demande" Command', () => {
             id: 'privileges-decision@example.com',
           },
           id: 'abcdef',
-          data: [],
+          data: {
+            ttc: -1,
+          },
         });
         chai.assert.fail(result);
       } catch (err) {
-        chai.assert.equal(err.name, 'ErrorPermissions');
+        chai.assert.equal(err.name, 'ErrorDomainValidation');
       }
     });
   });
