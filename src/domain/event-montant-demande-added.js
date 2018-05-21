@@ -1,4 +1,4 @@
-const idGenerator = require('./utils/idGenerator');
+const idGenerator = require('../infrastructure/idGenerator');
 
 class MontantDemandeAdded {
   constructor(aggregateId, author, montant) {

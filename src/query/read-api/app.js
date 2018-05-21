@@ -5,8 +5,8 @@ const bodyParser = require('body-parser');
 const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
 
-const DemandeFinancement = require('../core/domain/demande-financement');
-const DemandeFinancementId = require('../core/domain/demande-financement-id');
+const DemandeFinancement = require('../../domain/demande-financement');
+const DemandeFinancementId = require('../../domain/demande-financement-id');
 const Repository = require('../core/repositories/repository');
 
 const queue = 'demandes-financement';

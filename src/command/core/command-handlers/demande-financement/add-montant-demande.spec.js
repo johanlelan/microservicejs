@@ -1,16 +1,16 @@
 const chai = require('chai');
 
-const eventsStoreModule = require('../../infrastructure/event-store');
-const eventPublisherModule = require('../../infrastructure/event-publisher');
+const eventsStoreModule = require('../../../../infrastructure/event-store');
+const eventPublisherModule = require('../../../../infrastructure/event-publisher');
 
-const DemandeFinancementId = require('../../domain/demande-financement-id');
-const DemandeFinancement = require('../../domain/demande-financement');
+const DemandeFinancementId = require('../../../../domain/demande-financement-id');
+const DemandeFinancement = require('../../../../domain/demande-financement');
 
 // errors
-const ErrorPermissions = require('../../domain/ErrorPermissions');
+const ErrorPermissions = require('../../../../domain/ErrorPermissions');
 
 //events
-const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
+const DemandeFinancementCreated = require('../../../../domain/event-demande-financement-created');
 
 const fakeLogger = {
   info: () => (undefined), //console.info,

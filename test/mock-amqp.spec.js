@@ -1,9 +1,12 @@
 const amqp = require('amqplib');
 const sinon = require('sinon');
 
-const DemandeFinancementId = require('../src/command/core/domain/demande-financement-id');
-const EventDemandeFinancementCreated = require('../src/command/core/domain/event-demande-financement-created');
+const DemandeFinancementId = require('../src/domain/demande-financement-id');
+const EventDemandeFinancementCreated = require('../src/domain/event-demande-financement-created');
+const EventDemandeFinancementDeleted = require('../src/domain/event-demande-financement-deleted');
+const EventDemandeFinancementAddMontantDemande = require('../src/domain/event-montant-demande-added');
 
+let eventNumber = 0;
 exports.channelStub = {
   isConnected: true,
   assertQueue: () => {
@@ -17,7 +20,7 @@ exports.channelStub = {
     return Promise.resolve();
   },
   consume: (queue, messageHandler) => {
-    const mockAMQPMessage = {
+    const mockAMQPCreateEvent = {
       properties: {
         replyTo: 'test-queue',
         correlationId: 'mockAMQPMessage',
@@ -32,7 +35,37 @@ exports.channelStub = {
           },
         }),
     };
-    return messageHandler(mockAMQPMessage);
+    const mockAMQPAddMontantDemandeEvent = {
+      properties: {
+        replyTo: 'test-queue',
+        correlationId: 'mockAMQPMessage',
+      },
+      payload: new EventDemandeFinancementAddMontantDemande(
+        new DemandeFinancementId('test-from-AMQP'),
+        'amqp-user',
+        {
+          ttc: 23456.78
+        }),
+    };
+    const mockAMQPDeleteEvent = {
+      properties: {
+        replyTo: 'test-queue',
+        correlationId: 'mockAMQPMessage',
+      },
+      payload: new EventDemandeFinancementDeleted(
+        new DemandeFinancementId('test-from-AMQP'),
+        'amqp-user',
+      ),
+    };
+    if (eventNumber === 0) {
+      eventNumber += 1;
+      return messageHandler(mockAMQPCreateEvent);
+    } else if (eventNumber === 1) {
+      eventNumber += 1;
+      return messageHandler(mockAMQPAddMontantDemandeEvent);
+    } else {
+      return messageHandler(mockAMQPDeleteEvent);
+    }
   },
 };
 

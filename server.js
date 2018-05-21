@@ -10,8 +10,8 @@ const Bus = require('./src/command/core/messaging/index');
 const handlers = require('./src/command/core/command-handlers/index.js');
 const readAPI = require('./src/query/read-api/app');
 const writeAPI = require('./src/command/write-api/app');
-const EventStore = require('./src/command/core/infrastructure/event-store');
-const eventPublisher = require('./src/command/core/infrastructure/event-publisher');
+const EventStore = require('./src/infrastructure/event-store');
+const eventPublisher = require('./src/infrastructure/event-publisher');
 const logger = require('./src/command/core/infrastructure/logger');
 
 const eventStore = EventStore.create(logger);

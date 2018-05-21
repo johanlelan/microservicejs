@@ -1,8 +1,8 @@
 // An aggregate + a command should return a array of events
 // const get = require('lodash.get');
 
-const idGenerator = require('./utils/idGenerator');
-const decisionProjection = require('./utils/decision-projection');
+const idGenerator = require('../infrastructure/idGenerator');
+const decisionProjection = require('../infrastructure/decision-projection');
 
 // id
 const DemandeFinancementId = require('./demande-financement-id');

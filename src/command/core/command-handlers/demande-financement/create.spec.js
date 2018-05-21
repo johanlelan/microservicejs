@@ -1,4 +1,4 @@
-const DemandeFinancement = require('../../domain/demande-financement');
+const DemandeFinancement = require('../../../../domain/demande-financement');
 const CreateDemandeFinancementCommand = require('./create')(DemandeFinancement);
 const chai = require('chai');
 

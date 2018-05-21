@@ -1,5 +1,5 @@
 const ErrorValidation = require('../ErrorValidation');
-const DemandeFinancementId = require('../../domain/demande-financement-id');
+const DemandeFinancementId = require('../../../../domain/demande-financement-id');
 
 const validate = (command) => {
   const errors = [];

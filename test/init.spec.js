@@ -12,8 +12,8 @@ const mockamqp = require('./mock-amqp.spec');
 const handlers = require('../src/command/core/command-handlers/index');
 const chai = require('chai');
 
-const eventStore = require('../src/command/core/infrastructure/event-store').create(logger);
-const publisher = require('../src/command/core/infrastructure/event-publisher').create(logger);
+const eventStore = require('../src/infrastructure/event-store').create(logger);
+const publisher = require('../src/infrastructure/event-publisher').create(logger);
 const writeAPI = require('../src/command/write-api/app');
 
 const readAPI = require('../src/query/read-api/app');

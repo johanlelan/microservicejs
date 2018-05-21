@@ -1,8 +1,8 @@
 const chai = require('chai');
 
-const DemandeFinancement = require('../../domain/demande-financement');
+const DemandeFinancement = require('../../../../domain/demande-financement');
 const buildCommandHandler = require('./index');
-const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
+const DemandeFinancementCreated = require('../../../../domain/event-demande-financement-created');
 
 const mockEventStore = {
   append: (event) => {

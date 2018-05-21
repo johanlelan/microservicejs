@@ -96,7 +96,7 @@ describe('READ API', () => {
     }).auth(username, password);
   });
 
-  it('When DemandeFinancementId Does Not Exist Then Retrurn a 404', (done) => {
+  it('When DemandeFinancementId Does Not Exist Then Return a 404', (done) => {
     const getDemandeFinancementOptions = {
       method: 'GET',
       uri: 'http://localhost:3001/demandes-financement/unknown',
