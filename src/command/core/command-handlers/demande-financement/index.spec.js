@@ -11,7 +11,7 @@ const mockEventStore = {
   },
   getEventsOfAggregate: (id) => {
     return [
-      new DemandeFinancementCreated(id, 'test@example.fr', {}),
+      new DemandeFinancementCreated(id, { id: 'test@example.fr', title: 'test' }, {}),
     ];
   },
 }
@@ -32,9 +32,9 @@ const mockLogger = {
   warn: () => (undefined), //console.warn,
 }
 
-const mockChannel = require('../../../../test/mock-amqp.spec').channelStub;
+const mockChannel = require('../../../../../test/mock-amqp.spec').channelStub;
 
-describe('Demande-financement Commands', () => {
+describe('Bus channel With Demande-financement Commands', () => {
   it('Should manage createDemandeFinancement bus commands', () => {
     return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
     .then(commandHandler => {
@@ -110,7 +110,8 @@ describe('Demande-financement Commands', () => {
           name: 'deleteDemandeFinancement',
           timestamp: Date.now(),
           user: {
-            id: 'any-user@example.com',
+            id: 'test@example.fr',
+            title: 'test',
           },
           id: {
             id: 'test deleteDemandeFinancement from message bus',

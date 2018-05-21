@@ -6,12 +6,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('server');
 
-const Bus = require('./src/core/messaging/index');
-const handlers = require('./src/core/command-handlers/index.js');
-const restAPI = require('./src/rest-api/app');
-const EventStore = require('./src/core/infrastructure/event-store');
-const eventPublisher = require('./src/core/infrastructure/event-publisher');
-const logger = require('./src/core/infrastructure/logger');
+const Bus = require('./src/command/core/messaging/index');
+const handlers = require('./src/command/core/command-handlers/index.js');
+const readAPI = require('./src/query/read-api/app');
+const writeAPI = require('./src/command/write-api/app');
+const EventStore = require('./src/command/core/infrastructure/event-store');
+const eventPublisher = require('./src/command/core/infrastructure/event-publisher');
+const logger = require('./src/command/core/infrastructure/logger');
 
 const eventStore = EventStore.create(logger);
 const publisher = eventPublisher.create(logger);
@@ -20,18 +21,28 @@ publisher.onAny((event) => {
   eventStore.append(event);
 });
 
+// Run messaging listener for queries
+const queryWhenConnected = (channel) => {
+  debug('Messaging query channel connected');
+  return readAPI.run(channel, (errQuery) => {
+    if (errQuery) { throw (errQuery); }
+    return channel;
+  });
+};
+
 // Run messaging listener and publisher
-const whenConnected = (channel) => {
-  debug('Messaging channel connected');
+const commandWhenConnected = (channel) => {
+  debug('Messaging command channel connected');
   return handlers(eventStore, publisher, logger, channel);
 };
 
 // connect to message broker
 Bus.connect()
-  .then(whenConnected)
+  .then(queryWhenConnected)
+  .then(commandWhenConnected)
   .then((handler) => {
-  // Run RESTful API
-    restAPI.run(handler, (err) => {
-      if (err) { throw (err); }
+    // Run RESTful API
+    writeAPI.run(handler, (errCommand) => {
+      if (errCommand) { throw (errCommand); }
     });
   });

@@ -44,7 +44,6 @@ exports.create = function create(eventStore, publisher, logger, channel) {
   const repository = demandeFinancementRepository.create(DemandeFinancement, eventStore);
   // every published demande-financement events should be sent to bus
   const commandHandler = {
-    getRepository: () => repository,
     create: createDemandeFinancement(
       DemandeFinancement,
       repository,
@@ -68,7 +67,7 @@ exports.create = function create(eventStore, publisher, logger, channel) {
     ),
   };
 
-  function consumerInputEvents() {
+  function consumeIncomingMessagingCommands() {
     if (!channel.isConnected) {
       logger.warn('No input messaging channel');
       return Promise.resolve({});
@@ -101,6 +100,6 @@ exports.create = function create(eventStore, publisher, logger, channel) {
 
   return Promise.all([
     propageEvents(),
-    consumerInputEvents(),
+    consumeIncomingMessagingCommands(),
   ]).then(() => commandHandler);
 };

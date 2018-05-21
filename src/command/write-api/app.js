@@ -5,8 +5,6 @@ const bodyParser = require('body-parser');
 const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
 
-const DemandeFinancementId = require('../core/domain/demande-financement-id');
-
 debug('Starting HTTP endpoints');
 
 const app = express();
@@ -61,16 +59,6 @@ function runApp(commandHandler, callback) {
       return commandHandler.demandeFinancement.addMontantDemande(command).then(() => {
         res.status(202).json(req.body);
       }).catch(next);
-    },
-  );
-
-  app.get(
-    '/demandes-financement/:identifier',
-    ensureLoggedIn,
-    (req, res) => {
-      const aggregate = commandHandler.demandeFinancement.getRepository()
-        .getById(new DemandeFinancementId(req.params.identifier));
-      res.status(200).json(aggregate);
     },
   );
 

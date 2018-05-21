@@ -2,55 +2,13 @@ process.env.NODE_ENV = 'test';
 
 const request = require('request');
 const chai = require('chai');
-const amqp = require('amqplib');
-const sinon = require('sinon');
 
-const app = require('./app');
-const handlers = require('../core/command-handlers/index');
-
-const logger = {
-  debug: () => (undefined), //console.debug,
-  info: () => (undefined), //console.info,
-  warn: () => (undefined), //console.warn,
-}
-const eventStore = require('../core/infrastructure/event-store').create(logger);
-const publisher = require('../core/infrastructure/event-publisher').create(logger);
-
-// save all events into events store
-publisher.onAny(event => eventStore.append(event));
+require('../../../test/init.spec');
 
 const username = 'admin';
 const password = 'nimda';
 
-// mock amqp
-let firstConnect = true;
-sinon.stub(amqp, 'connect').callsFake(() => {
-  if (firstConnect) {
-    firstConnect = false;
-    return Promise.reject('Mock a connect error');
-  }
-  return Promise.resolve(require('../../test/mock-amqp.spec').connect);
-});
-
-describe('REST API', () => {
-  before((donePreparing) => {
-    // wait until app is started
-    // first connection will fail
-    amqp.connect().then((bus) => {
-      chai.assert.fail('Should fail on first connection');
-    }).catch(() => {
-      chai.assert.isOk(true)
-      amqp.connect().then(bus => bus.createChannel())
-      .then(channel => {
-        // create command handler
-        handlers(eventStore, publisher, logger, channel)
-        .then(commandHandler => {
-          //console.log('[HTTP] start express app');
-          return app.run(commandHandler, donePreparing)
-        });
-      });
-    });
-  });
+describe('WRITE API', () => {
   it('Should refuse Unauthorized requests', (done) => {
     const options = {
       method: 'POST',
@@ -292,41 +250,4 @@ describe('REST API', () => {
       done(err);
     }).auth(username, password);
   });
-  
-  it('Get a DemandeFinancement', (done) => {
-    const options = {
-      method: 'POST',
-      uri: 'http://localhost:3000/demandes-financement',
-      body: {
-        objet: 'Demande de financement',
-        montant: {
-          ttc: 1234.56,
-        },
-      },
-      json: true,
-      headers: {
-        'X-Request-Id': '11'
-      },
-    };
-    return request(options, (err, resp, body) => {
-      chai.expect(body).have.property('aggregateId');
-      const location = resp.headers.location;
-      const getDemandeFinancementOptions = {
-        method: 'GET',
-        uri: 'http://localhost:3000' + location,
-        headers: {
-          'X-Request-Id': '11.1'
-        },
-      };
-      return request(getDemandeFinancementOptions, (err, resp, body) => {
-        chai.expect(resp).have.property('statusCode', 200);
-        done(err);
-      }).auth(username, password);
-    }).auth(username, password);
-  });
-});
-
-after((doneCleaning) => {
-  process.env.API_PORT = 3002;
-  app.run(undefined, err => doneCleaning(err));
 });
