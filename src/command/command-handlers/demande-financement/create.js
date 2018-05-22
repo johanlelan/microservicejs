@@ -36,7 +36,7 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, logger)
 
     // authorize user
     DemandeFinancement.canCreateDemandeFinancement(command.user, command.data);
-    logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name}`);
+    logger.info(`Incoming user "${command.user.id}" is allowed to execute ${command.name}`);
 
     // invoking a function which is a part of the
     // aggregate defined in a domain model

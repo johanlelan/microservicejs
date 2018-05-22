@@ -21,27 +21,17 @@ publisher.onAny((event) => {
   eventStore.append(event);
 });
 
-// Run messaging listener for queries
-const queryWhenConnected = (channel) => {
-  debug('Messaging query channel connected');
-  return readAPI.run(channel, (errQuery) => {
-    if (errQuery) { throw (errQuery); }
-    return channel;
-  });
-};
-
-// Run messaging listener and publisher
-const commandWhenConnected = (channel) => {
-  debug('Messaging command channel connected');
-  return handlers(eventStore, publisher, logger, channel)
-    .then((handler) => {
-      writeAPI.run(handler, (errCommand) => {
-        if (errCommand) { throw (errCommand); }
-      });
+handlers(eventStore, publisher, logger)
+  .then((handler) => {
+    debug('[Command] handler created');
+    // connect to message broker
+    Bus.connect(publisher, eventStore, handler, logger);
+    readAPI.run(eventStore, logger, (errQuery) => {
+      if (errQuery) { throw (errQuery); }
+      debug('[Query] HTTP API started');
     });
-};
-
-// connect to message broker
-Bus.connect()
-  .then(queryWhenConnected)
-  .then(commandWhenConnected);
+    writeAPI.run(handler, logger, (errCommand) => {
+      if (errCommand) { throw (errCommand); }
+      debug('[Command] HTTP API started');
+    });
+  });

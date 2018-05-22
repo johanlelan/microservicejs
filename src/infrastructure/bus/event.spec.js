@@ -1,8 +1,15 @@
 const chai = require('chai');
 
+const EventPublisher = require('../event-publisher')
+
 const DemandeFinancement = require('../../../src/domain/demande-financement');
-const buildCommandHandler = require('../../command/command-handlers/demande-financement/index');
+const DemandeFinancementHandler = require('../../command/command-handlers/demande-financement/index');
+const DemandeFinancementId = require('../../../src/domain/demande-financement-id');
 const DemandeFinancementCreated = require('../../../src/domain/event-demande-financement-created');
+
+// mock all messaging bus functions
+const mockBus = require('../../../test/mock-amqp.spec')
+const Bus = require('./event');
 
 const mockEventStore = {
   append: (event) => {
@@ -14,32 +21,56 @@ const mockEventStore = {
       new DemandeFinancementCreated(id, { id: 'test@example.fr', title: 'test' }, {}),
     ];
   },
-}
-
-const mockPublisher = {
-  publish: (event) => {
-    // nothing to do
-    // console.log('Publish event', event);
-  },
-  onAny: (event) => {
-    // nothing to do
-    // console.log('onAny event', event);
-  },
-}
+};
 
 const mockLogger = {
   info: () => (undefined), //console.info,
   warn: () => (undefined), //console.warn,
-}
+};
 
-const mockChannel = require('../../../test/mock-amqp.spec').channelStub;
+const eventPublisher = EventPublisher.create(mockLogger);
+
+const mockChannel = mockBus.channelStub;
 
 describe('Bus', () => {
+  describe('When connected', () => {
+    it('Should start bus even if connection failed', () => {
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, mockChannel)
+        .then(commandHandler => {
+          return Bus.connect(eventPublisher, mockEventStore, commandHandler, mockLogger)
+          .then((bus) => {
+            return Bus.connect(eventPublisher, mockEventStore, commandHandler, mockLogger)
+            .then((bus) => {
+              chai.assert.isOk(true);
+            });
+          });
+        });
+    });
+    it('Should propagate events', () => {
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, mockChannel)
+        .then(commandHandler => {
+          return Bus.connect(eventPublisher, mockEventStore, commandHandler, mockLogger)
+          .then((bus) => {
+            // publish an event
+            eventPublisher.publish(
+              new DemandeFinancementCreated(
+                new DemandeFinancementId('propagate-event'),
+                {
+                  id: 'any-user',
+                  title: 'any user'
+                }, {
+                  status: 'REQUESTED'
+                }));
+          });
+        });
+    });
+  });
+
   describe('When Receiving Demande-financement Commands', () => {
     it('Should manage createDemandeFinancement', () => {
-      return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, mockChannel)
       .then(commandHandler => {
-        buildCommandHandler.buildMessageHandler(commandHandler, {
+        Bus.buildMessageHandler(commandHandler, {
           isConnected: true,
           sendToQueue: () => { return chai.assert.isOk(true); }
         }, mockLogger)({
@@ -61,10 +92,10 @@ describe('Bus', () => {
     });
 
     it('Should manage addMontantDemande', () => {
-      return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, mockChannel)
       .then(commandHandler => {
 
-        const busMessageHandler = buildCommandHandler.buildMessageHandler(commandHandler, {
+        const busMessageHandler = Bus.buildMessageHandler(commandHandler, {
           isConnected: true,
           sendToQueue: () => { return chai.assert.isOk(true); }
         }, mockLogger);
@@ -94,10 +125,10 @@ describe('Bus', () => {
     });
 
     it('Should manage deleteDemandeFinancement', () => {
-      return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, mockChannel)
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, mockChannel)
       .then(commandHandler => {
 
-        const busMessageHandler = buildCommandHandler.buildMessageHandler(commandHandler, {
+        const busMessageHandler = Bus.buildMessageHandler(commandHandler, {
           isConnected: true,
           sendToQueue: () => { return chai.assert.isOk(true); }
         }, mockLogger);
@@ -127,7 +158,7 @@ describe('Bus', () => {
 
   describe('When No Bus is configured Then No Propagation', () => {
     it('Should not consume any messages, should not propagate any events', () => {
-      return buildCommandHandler.create(mockEventStore, mockPublisher, mockLogger, {})
+      return DemandeFinancementHandler.create(mockEventStore, eventPublisher, mockLogger, {})
       .then(commandHandler => {
         chai.assert.isOk(commandHandler);
       });

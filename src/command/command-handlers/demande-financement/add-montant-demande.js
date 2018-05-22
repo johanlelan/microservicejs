@@ -49,7 +49,7 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, logger)
     // aggregate defined in a domain model
     // authorize user
     DemandeFinancement.canAddMontantDemande(command.user, current, command.data);
-    logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
+    logger.info(`Incoming user "${command.user.id}" is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
     const events = current.ajouterMontantDemande(command.id, command.user, current, command.data);
     events.forEach(event => publisher.publish(event));
     return events;

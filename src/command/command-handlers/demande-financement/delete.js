@@ -53,7 +53,7 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, logger)
     // aggregate defined in a domain model
     // authorize user
     DemandeFinancement.canDeleteDemandeFinancement(command.user, current, command.data);
-    logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
+    logger.info(`Incoming user "${command.user.id}" is allowed to execute ${command.name}`);
     const events = current.delete(command.user);
     events.forEach(event => publisher.publish(event));
     return events;

@@ -1,6 +1,7 @@
 const debug = require('debug')('rest-api');
 const express = require('express');
 const bodyParser = require('body-parser');
+const pino = require('express-pino-logger')();
 
 const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
@@ -10,8 +11,9 @@ debug('Starting HTTP endpoints');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({}));
+app.use(pino);
 
-function runApp(commandHandler, callback) {
+function runApp(commandHandler, logger, callback) {
   let port = 3000;
   if (process.env.API_PORT) {
     port = parseInt(process.env.API_PORT, 10);
@@ -21,9 +23,7 @@ function runApp(commandHandler, callback) {
     if (!req.headers['x-request-id']) {
       throw new HTTPRequestShouldHaveXRequestID('All incoming HTTP requests should have X-Request-Id header');
     }
-    debug(`${req.headers['x-request-id']} - Starting request ${req.method} ${req.originalUrl}`);
     next();
-    debug(`${req.headers['x-request-id']} - Ending request ${req.method} ${req.originalUrl}`);
   });
 
   app.post(

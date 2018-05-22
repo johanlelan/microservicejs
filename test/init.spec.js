@@ -7,7 +7,7 @@ const logger = {
 }
 
 // override AMQP lib static functions
-const mockamqp = require('./mock-amqp.spec');
+const mockBus = require('./mock-amqp.spec');
 
 const handlers = require('../src/command/command-handlers/index');
 const chai = require('chai');
@@ -23,6 +23,25 @@ publisher.onAny(event => eventStore.append(event));
 
 let init = false;
 let ending = false;
+
+let connection = 0;
+// first connection will throw an error
+// second will be good
+// third connection will throw an error
+// and so forth
+mockBus.stub.callsFake(() => {
+  if (connection === 0) {
+    connection = 1;
+    return Promise.reject({ message: 'Mock a connect error'});
+  } else if (connection === 1) {
+    connection = 2;
+    return Promise.resolve(mockBus.connect);
+  } else if (connection === 2) {
+    connection = 3;
+    return Promise.reject({ message: 'Mock a connect error'});
+  }
+  return Promise.resolve(mockBus.connect);
+});
 before((donePreparing) => {
   if (init) return donePreparing();
   // wait until app is started
@@ -30,30 +49,32 @@ before((donePreparing) => {
   amqp.connect().then((bus) => {
     chai.assert.fail('Should fail on first connection');
   }).catch(() => {
-    chai.assert.isOk(true)
-    amqp.connect().then(bus => bus.createChannel())
+    chai.assert.isOk(true);
+    amqp.connect()
+    .then(bus => bus.createChannel())
     .then(channel => {
       // create command handler
       handlers(eventStore, publisher, logger, channel)
       .then(commandHandler => {
         //console.log('[HTTP] start express app');
-        return readAPI.run(channel, eventStore,
+        return readAPI.run(eventStore, logger,
           (err) => {
             if (err) return donePreparing(err);
-            return writeAPI.run(commandHandler, 
+            return writeAPI.run(commandHandler, logger,
             () => {
               init = true;
               return donePreparing();
             });
           });
       });
-    });
+    })
+    .catch(donePreparing);
   });
 });
 after((doneCleaning) => {
   if (ending) return doneCleaning();
   process.env.API_PORT = 3002;
-  writeAPI.run(undefined, err => {
+  writeAPI.run(undefined, logger, err => {
     if (err) return doneCleaning(err);
     process.env.API_PORT = 3003;
     amqp.connect().then(bus => bus.createChannel())
@@ -62,6 +83,7 @@ after((doneCleaning) => {
         ending = true;
         return doneCleaning(err)
       });
-    });
+    })
+    .catch(doneCleaning);
   });
 });
