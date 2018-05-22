@@ -9,14 +9,14 @@ const logger = {
 // override AMQP lib static functions
 const mockamqp = require('./mock-amqp.spec');
 
-const handlers = require('../src/command/core/command-handlers/index');
+const handlers = require('../src/command/command-handlers/index');
 const chai = require('chai');
 
 const eventStore = require('../src/infrastructure/event-store').create(logger);
 const publisher = require('../src/infrastructure/event-publisher').create(logger);
-const writeAPI = require('../src/command/write-api/app');
+const writeAPI = require('../src/interfaces/http//write-api/app');
 
-const readAPI = require('../src/query/read-api/app');
+const readAPI = require('../src/interfaces/http/read-api/app');
 
 // save all events into events store
 publisher.onAny(event => eventStore.append(event));

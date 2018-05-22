@@ -3,7 +3,7 @@ process.env.NODE_ENV = 'test';
 const request = require('request');
 const chai = require('chai');
 
-require('../../../test/init.spec');
+require('../../../../test/init.spec');
 
 const readerLogin = 'reader';
 const readerPwd = 'redaer';

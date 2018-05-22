@@ -1,7 +1,7 @@
-const decisionProjection = require('./decision-projection');
+const decisionProjection = require('./hydrate-processor');
 const chai = require('chai');
 
-describe('DecisionProjection', () => {
+describe('Hydrate Processor', () => {
   const EventA = function EventA() {
     this.userId = 'UserA';
   };

@@ -6,16 +6,16 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('server');
 
-const Bus = require('./src/command/core/messaging/index');
-const handlers = require('./src/command/core/command-handlers/index.js');
-const readAPI = require('./src/query/read-api/app');
-const writeAPI = require('./src/command/write-api/app');
+const Bus = require('./src/infrastructure/bus/event');
+const handlers = require('./src/command/command-handlers/index.js');
+const readAPI = require('./src/interfaces/http/read-api/app');
+const writeAPI = require('./src/interfaces/http//write-api/app');
 const EventStore = require('./src/infrastructure/event-store');
-const eventPublisher = require('./src/infrastructure/event-publisher');
-const logger = require('./src/command/core/infrastructure/logger');
+const EventPublisher = require('./src/infrastructure/event-publisher');
+const logger = require('./src/infrastructure/logger');
 
 const eventStore = EventStore.create(logger);
-const publisher = eventPublisher.create(logger);
+const publisher = EventPublisher.create(logger);
 // every published events should be saved into event-store
 publisher.onAny((event) => {
   eventStore.append(event);
@@ -33,16 +33,15 @@ const queryWhenConnected = (channel) => {
 // Run messaging listener and publisher
 const commandWhenConnected = (channel) => {
   debug('Messaging command channel connected');
-  return handlers(eventStore, publisher, logger, channel);
+  return handlers(eventStore, publisher, logger, channel)
+    .then((handler) => {
+      writeAPI.run(handler, (errCommand) => {
+        if (errCommand) { throw (errCommand); }
+      });
+    });
 };
 
 // connect to message broker
 Bus.connect()
   .then(queryWhenConnected)
-  .then(commandWhenConnected)
-  .then((handler) => {
-    // Run RESTful API
-    writeAPI.run(handler, (errCommand) => {
-      if (errCommand) { throw (errCommand); }
-    });
-  });
+  .then(commandWhenConnected);

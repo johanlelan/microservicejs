@@ -1,17 +1,17 @@
 const chai = require('chai');
 
-const createEventsStore = require('../../../infrastructure/event-store').create;
-const DemandeFinancement = require('../../../domain/demande-financement');
+const EventStore = require('../../infrastructure/event-store');
+const DemandeFinancement = require('../../domain/demande-financement');
 const Repository = require('./repository');
 const ErrorNotFound = require('./ErrorNotFound');
-const DemandeFinancementId = require('../../../domain/demande-financement-id');
+const DemandeFinancementId = require('../../domain/demande-financement-id');
 
 const fakeLogger = {
   info: () => (undefined), //console.info,
 }
 
 // events
-const DemandeFinancementCreated = require('../../../domain/event-demande-financement-created');
+const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
 
 describe('Repository', () => {
   let repository;
@@ -19,7 +19,7 @@ describe('Repository', () => {
   let publishEvent;
 
   beforeEach(() => {
-    eventsStore = createEventsStore(fakeLogger);
+    eventsStore = EventStore.create(fakeLogger);
     repository = Repository.create(DemandeFinancement, eventsStore);
     publishEvent = (evt) => {
       eventsStore.append(evt);

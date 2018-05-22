@@ -2,7 +2,7 @@
 // const get = require('lodash.get');
 
 const idGenerator = require('../infrastructure/idGenerator');
-const decisionProjection = require('../infrastructure/decision-projection');
+const decisionProjection = require('../infrastructure/hydrate-processor');
 
 // id
 const DemandeFinancementId = require('./demande-financement-id');

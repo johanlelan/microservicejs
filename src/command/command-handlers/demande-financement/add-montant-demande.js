@@ -1,11 +1,11 @@
 const ErrorValidation = require('../ErrorValidation');
-const DemandeFinancementId = require('../../../../domain/demande-financement-id');
+const DemandeFinancementId = require('../../../domain/demande-financement-id');
 
 const validate = (command) => {
   const errors = [];
-  if (command.name !== 'deleteDemandeFinancement') {
+  if (command.name !== 'addMontantDemande') {
     errors.push({
-      message: 'Command name should be "deleteDemandeFinancement"',
+      message: 'Command name should be "createDemandeFinancement"',
     });
   }
   if (!command.timestamp) {
@@ -29,7 +29,7 @@ const validate = (command) => {
   throw new ErrorValidation('Command is invalid', { message: 'Command is invalid', errors });
 };
 module.exports = (DemandeFinancement, repository, eventStore, publisher, logger) =>
-  async function deleteDemandeFinancement(command) {
+  async function AddMontantDemande(command) {
   // validate inputs
     try {
       validate(command);
@@ -42,19 +42,15 @@ module.exports = (DemandeFinancement, repository, eventStore, publisher, logger)
     try {
       current = repository.getById(new DemandeFinancementId(command.id));
     } catch (err) {
-      logger.info(`Aggregate ${command.id} does not exist anymore`);
-      // do not throw an UnkownAggregate Error
-      // idempodency implies to return a 204 event if aggregate does not exist
-      // no more events to publish
-      return [];
+      throw err;
     }
 
     // invoking a function which is a part of the
     // aggregate defined in a domain model
     // authorize user
-    DemandeFinancement.canDeleteDemandeFinancement(command.user, current, command.data);
+    DemandeFinancement.canAddMontantDemande(command.user, current, command.data);
     logger.info(`Incoming user ${command.user.id} is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
-    const events = current.delete(command.user);
+    const events = current.ajouterMontantDemande(command.id, command.user, current, command.data);
     events.forEach(event => publisher.publish(event));
     return events;
   };
