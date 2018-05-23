@@ -1,17 +1,17 @@
 const chai = require('chai');
 
-const EventStore = require('../../infrastructure/event-store');
-const DemandeFinancement = require('../../domain/demande-financement');
+const EventStore = require('./event-store');
+const DemandeFinancement = require('../domain/demande-financement');
 const Repository = require('./repository');
-const ErrorNotFound = require('./ErrorNotFound');
-const DemandeFinancementId = require('../../domain/demande-financement-id');
+const AggregateNotFound = require('./AggregateNotFound');
+const DemandeFinancementId = require('../domain/demande-financement-id');
 
 const fakeLogger = {
   info: () => (undefined), //console.info,
 }
 
 // events
-const DemandeFinancementCreated = require('../../domain/event-demande-financement-created');
+const DemandeFinancementCreated = require('../domain/event-demande-financement-created');
 
 describe('Repository', () => {
   let repository;
@@ -29,7 +29,7 @@ describe('Repository', () => {
   it('Given no events When GetById Then throw UnknownDemandeFinancement', () => {
     chai.expect(() => {
       repository.getById(new DemandeFinancementId('BadId'));
-    }).to.throw(ErrorNotFound);
+    }).to.throw(AggregateNotFound);
   });
 
   it('Given several events When GetById Then Return DemandeFinancement', () => {

@@ -8,7 +8,7 @@ const ensureLoggedIn = require('./middlewares/ensure-logged-in');
 
 const DemandeFinancement = require('../../../domain/demande-financement');
 const DemandeFinancementId = require('../../../domain/demande-financement-id');
-const Repository = require('../../../query/core/repositories/repository');
+const Repository = require('../../../infrastructure/repository');
 
 debug('Starting HTTP endpoints');
 

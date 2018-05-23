@@ -3,7 +3,7 @@ const createDemandeFinancement = require('./create');
 const addMontantDemande = require('./add-montant-demande');
 const deleteDemandeFinancement = require('./delete');
 
-const demandeFinancementRepository = require('../../repositories/repository');
+const demandeFinancementRepository = require('../../../infrastructure/repository');
 
 exports.create = function create(eventStore, publisher, logger) {
   // retrieve repository

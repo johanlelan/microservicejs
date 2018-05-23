@@ -2,7 +2,7 @@ const chai = require('chai');
 
 const eventsStoreModule = require('../../../infrastructure/event-store');
 const eventPublisherModule = require('../../../infrastructure/event-publisher');
-const repositoryModule = require('../../repositories/repository');
+const repositoryModule = require('../../../infrastructure/repository');
 
 const DemandeFinancementId = require('../../../domain/demande-financement-id');
 const DemandeFinancement = require('../../../domain/demande-financement');

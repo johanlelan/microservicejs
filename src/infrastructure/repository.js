@@ -1,10 +1,10 @@
-const UnknownAggregate = require('./ErrorNotFound');
+const AggregateNotFound = require('./AggregateNotFound');
 
 const Repository = function Repository(Aggregate, eventsStore) {
   const getAllEvents = function getAllEvents(id) {
     const events = eventsStore.getEventsOfAggregate(id);
     if (events.length === 0) {
-      throw new UnknownAggregate('Not Found', { id });
+      throw new AggregateNotFound('Not Found', { id });
     }
 
     return events;
