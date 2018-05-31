@@ -1,10 +1,10 @@
 const amqp = require('amqplib');
 const sinon = require('sinon');
 
-const DemandeFinancementId = require('../src/domain/demande-financement-id');
-const EventDemandeFinancementCreated = require('../src/domain/event-demande-financement-created');
-const EventDemandeFinancementDeleted = require('../src/domain/event-demande-financement-deleted');
-const EventDemandeFinancementAddMontantDemande = require('../src/domain/event-montant-demande-added');
+const DemandeFinancementId = require('../command/src/modules/domain/src/demande-financement-id');
+const EventDemandeFinancementCreated = require('../command/src/modules/domain/src/event-demande-financement-created');
+const EventDemandeFinancementDeleted = require('../command/src/modules/domain/src/event-demande-financement-deleted');
+const EventDemandeFinancementAddMontantDemande = require('../command/src/modules/domain/src/event-montant-demande-added');
 
 let eventNumber = 0;
 function consumeEvents(messageHandler) {

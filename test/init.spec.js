@@ -9,14 +9,14 @@ const logger = {
 // override AMQP lib static functions
 const mockBus = require('./mock-amqp.spec');
 
-const handlers = require('../src/command/command-handlers/index');
+const handlers = require('../command/src/command-handlers/index');
 const chai = require('chai');
 
-const eventStore = require('../src/infrastructure/event-store').create(logger);
-const publisher = require('../src/infrastructure/event-publisher').create(logger);
-const writeAPI = require('../src/interfaces/http//write-api/app');
+const eventStore = require('../command/src/modules/infrastructure/src/event-store').create(logger);
+const publisher = require('../command/src/modules/infrastructure/src/event-publisher').create(logger);
+const writeAPI = require('../command/src/interfaces/http/app');
 
-const readAPI = require('../src/interfaces/http/read-api/app');
+const readAPI = require('../query/src/interfaces/http/app');
 
 // save all events into events store
 publisher.onAny(event => eventStore.append(event));
@@ -71,7 +71,7 @@ before((donePreparing) => {
     .catch(donePreparing);
   });
 });
-after((doneCleaning) => {
+/*after((doneCleaning) => {
   if (ending) return doneCleaning();
   process.env.API_PORT = 3002;
   writeAPI.run(undefined, logger, err => {
@@ -86,4 +86,4 @@ after((doneCleaning) => {
     })
     .catch(doneCleaning);
   });
-});
+});*/

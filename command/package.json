@@ -1,20 +1,31 @@
 {
-  "name": "microservicejs",
+  "name": "microservicejs-command",
   "version": "1.0.0",
   "description": "Example of DDD, CQRS Microservice with event-sourcing",
+  "main": "app.js",
   "scripts": {
+    "lint": "node node_modules/.bin/eslint .",
+    "start": "node server.js",
     "test": "cross-env NODE_ENV=test nyc -r lcov -r text-summary mocha --recursive './!(node_modules)/**/*.spec.js'",
-    "coverage": "npm test; node_modules/.bin/nyc report",
-    "lint": "cd query; npm run lint; cd ../command; npm run lint; cd .."
+    "coverage": "npm test; node_modules/.bin/nyc report"
   },
   "author": "lelan-j@mgdis.fr",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.5.2",
+    "body-parser": "^1.18.2",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "express-pino-logger": "^3.0.1",
+    "lodash.get": "^4.4.2",
     "lodash.map": "^4.6.0",
-    "lodash.sortby": "^4.7.0"
+    "lodash.sortby": "^4.7.0",
+    "passport": "^0.4.0",
+    "passport-http": "^0.3.0",
+    "pino": "^4.16.1",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
-    "amqplib": "^0.5.2",
     "chai": "^4.1.2",
     "chai-arrays": "^2.0.0",
     "cross-env": "^5.1.4",

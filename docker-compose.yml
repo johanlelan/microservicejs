@@ -6,37 +6,56 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  db:
-    image: mongo:latest
-    container_name: mongo
-    ports:
-      - "27017:27017"
-  pubsub-db:
-    image: rethinkdb:latest
-    ports:
-      - "38080:8080"
-  index:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.8
-    container_name: elasticsearch
+#      db:
+#    image: mongo:latest
+#    container_name: mongodb
+#    ports:
+#      - "27018:27017"
+#  index:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.8
+#    container_name: elasticsearch
+#    environment:
+#      - bootstrap.memory_lock=true
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#    ports:
+#      - "9200:9200"
+#  graph:
+#    image: orientdb:latest
+#    container_name: orientdb
+#    ports:
+#      - "2424:2424"
+#      - "2480:2480"
+#    environment:
+#      ORIENTDB_ROOT_PASSWORD: 'admin'
+#  cache:
+#    image: redis:latest
+#    container_name: redis
+#    ports:
+#      - "6379:6379"
+  command:
+    build: ./command
     environment:
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      DB_URL: 'mongodb://db:27017'
+      AMQP_URL: 'amqp://bus:5672'
     ports:
-      - "9200:9200"
-  graph-db:
-    image: orientdb:latest
-    container_name: orientdb
-    ports:
-      - "2424:2424"
-      - "2480:2480"
+      - "3000:3000"
+    depends_on:
+      - bus
+#      - db
+#      - cache
+  query:
+    build: ./query
     environment:
-      ORIENTDB_ROOT_PASSWORD: 'admin'
-  cache:
-    image: redis:latest
-    container_name: redis
+      DB_URL: 'mongodb://db:27017'
+      AMQP_URL: 'amqp://bus:5672'
+      INDEX_URL: 'http://elasticsearch:9200'
     ports:
-      - "6379:6379"
+      - "3001:3001"
+    depends_on:
+      - bus
+#      - db
+#      - index

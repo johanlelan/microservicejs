@@ -1,0 +1,5 @@
+node_modules
+coverage
+.history/
+.nyc_output/
+.vscode/

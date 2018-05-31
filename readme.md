@@ -22,3 +22,16 @@
     1. emits one or more `business events` on command apply
 1. Event Store
     1. listens all emitted events to persist them
+
+# Benchmark
+
+Run with Apache Benchmark Tool
+
+ab -A admin:nimda -v 2 \
+    -p ./test/resource/demande-financement.json \
+    -H "X-Request-Id:1" \
+    -T 'application/json' \
+    -c 20 \
+    -n 500 \
+    -l \
+    http://localhost:3000/demandes-financement > ab-results.txt 2>&1
