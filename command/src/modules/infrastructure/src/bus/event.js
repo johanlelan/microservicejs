@@ -44,7 +44,7 @@ exports.propageEvents = (publisher, channel, logger) => Promise.all([
   channel.assertQueue(`${queue}.out`, { durable: true, autoDelete: false })
     .then(() => {
       publisher.onAny((event) => {
-        logger.info(`Propagte event ${event.name}`);
+        logger.info(`Propagate event ${event.name}`);
         return channel.sendToQueue(
           `${queue}.out`,
           Buffer.from(JSON.stringify(event)),
@@ -58,7 +58,7 @@ exports.propageEvents = (publisher, channel, logger) => Promise.all([
 
 exports.consumeIncomingEvents = (channel, eventStore) => {
   function saveEvent(event) {
-    eventStore.append(event.payload);
+    eventStore.append(JSON.parse(event.content));
     return Promise.resolve();
   }
 

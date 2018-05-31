@@ -115,6 +115,6 @@ describe('Demande-financement Aggregate', () => {
       new MontantDemandeAdded(demandeFinancementId, author, 123.56),
     ]);
 
-    chai.assert.isOk(userDemandeFinancement.lastUpdateDate);
+    chai.assert.isOk(userDemandeFinancement._updated);
   });
 });

@@ -7,7 +7,10 @@ const EventsStore = function EventsStore(logger) {
   const events = [];
 
   this.append = function append(event) {
-    const eventName = event.constructor.name;
+    // skip empty event
+    if (!event) return;
+    logger.info('Append event', event);
+    const eventName = event.name;
     if (!event.id) {
       throw new EventDontContainsId(eventName, event);
     }
@@ -25,7 +28,7 @@ const EventsStore = function EventsStore(logger) {
   };
 
   this.getEventsOfAggregate = function getEventsOfAggregate(aggregateId) {
-    return events.filter(event => event.aggregateId.equals(aggregateId));
+    return events.filter(event => aggregateId.equals(event.aggregateId));
   };
 };
 

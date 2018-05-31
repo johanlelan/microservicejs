@@ -1,17 +1,19 @@
-const decisionProjection = require('./hydrate-processor');
+const hydrateProcessor = require('./hydrate-processor');
 const chai = require('chai');
 
 describe('Hydrate Processor', () => {
   const EventA = function EventA() {
+    this.name = 'EventA';
     this.userId = 'UserA';
   };
 
   const EventB = function EventB() {
+    this.name = 'EventB';
     this.valueB = 'ValueB';
   };
 
   it('When register Event Then call action on apply of this event', () => {
-    const projection = decisionProjection.create().register(EventA, function register() {
+    const projection = hydrateProcessor.create().register(EventA, function register() {
       this.isCalled = true;
     }).apply(new EventA());
 
@@ -19,7 +21,7 @@ describe('Hydrate Processor', () => {
   });
 
   it('Given several event registered When apply Then call good handler for each event', () => {
-    const projection = decisionProjection.create().register(EventA, function register(event) {
+    const projection = hydrateProcessor.create().register(EventA, function register(event) {
       this.userId = event.userId;
     }).register(EventB, function register(event) {
       this.valueB = event.valueB;
@@ -30,7 +32,7 @@ describe('Hydrate Processor', () => {
   });
 
   it('When apply an event not registered Then nothing', () => {
-    const projection = decisionProjection.create().apply(new EventA());
+    const projection = hydrateProcessor.create().apply(new EventA());
 
     chai.assert.isUndefined(projection.userId);
   });
