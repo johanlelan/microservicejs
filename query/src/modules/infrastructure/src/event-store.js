@@ -7,8 +7,6 @@ const EventsStore = function EventsStore(logger) {
   const events = [];
 
   this.append = function append(event) {
-    // skip empty event
-    if (!event) return;
     logger.info('Append event', event);
     const eventName = event.name;
     if (!event.id) {

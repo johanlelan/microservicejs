@@ -47,7 +47,9 @@ function runApp(eventStore, logger, callback) {
   );
 
   /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "next" }] */
-  app.use((err, req, res, next) => res.status(err.statusCode || 500).json({
+  app.use((err, req, res, next) => res.status(err.statusCode ||
+    /* istanbul ignore next: for unmanaged errors */
+    500).json({
     detail: {
       message: err.message,
       stack: err.stack,

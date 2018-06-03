@@ -62,7 +62,7 @@ describe('READ API', () => {
       done(err);
     }).auth('unkonwnUser', readerPwd);
   });
-  it.skip('Get a DemandeFinancement', (done) => {
+  it('Get a DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
       uri: 'http://localhost:3000/demandes-financement',
@@ -93,6 +93,50 @@ describe('READ API', () => {
         chai.expect(resp).have.property('statusCode', 200);
         done(err);
       }).auth(readerLogin, readerPwd);
+    }).auth(username, password);
+  });
+  it('Get a Deleted DemandeFinancement', (done) => {
+    const options = {
+      method: 'POST',
+      uri: 'http://localhost:3000/demandes-financement',
+      body: {
+        objet: 'Demande de financement',
+        montant: {
+          ttc: 1234.56,
+        },
+      },
+      json: true,
+      headers: {
+        'X-Request-Id': 'read-1',
+      },
+    };
+    return request(options, (err, resp, body) => {
+      chai.expect(err).to.be.null;
+      chai.expect(body).have.property('aggregateId');
+      const location = resp.headers.location;
+      const deleteOptions = {
+        method: 'DELETE',
+        uri: `http://localhost:3000${location}`,
+        headers: {
+          'X-Request-Id': 'read-1',
+        },
+      };
+      return request(deleteOptions, (err, resp, body) => {
+        chai.expect(err).to.be.null;
+        chai.expect(resp).have.property('statusCode', 204);
+        const getDemandeFinancementOptions = {
+          method: 'GET',
+          uri: `http://localhost:3001${location}`,
+          headers: {
+            'X-Request-Id': 'read-1.1',
+          },
+        };
+        return request(getDemandeFinancementOptions, (err, resp, body) => {
+          chai.expect(err).to.be.null;
+          chai.expect(resp).have.property('statusCode', 410);
+          done(err);
+        }).auth(readerLogin, readerPwd);
+      }).auth(username, password);
     }).auth(username, password);
   });
   it('When DemandeFinancementId Does Not Exist Then Return a 404', (done) => {

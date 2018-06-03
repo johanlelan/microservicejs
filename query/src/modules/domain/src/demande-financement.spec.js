@@ -10,6 +10,10 @@ const DemandeFinancementCreated = require('./event-demande-financement-created')
 const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 
+// errors
+const ErrorDomainValidation = require('./ErrorDomainValidation');
+const ErrorPermissions = require('./ErrorPermissions');
+
 chai.use(assertArrays);
 
 describe('Demande-financement Aggregate', () => {
@@ -116,5 +120,69 @@ describe('Demande-financement Aggregate', () => {
     ]);
 
     chai.assert.isOk(userDemandeFinancement._updated);
+  });
+
+  it('Given created DemandeFinancement When "ajouterMontantDemande" then MontantDemandeAdded is emitted', () => {
+    const userDemandeFinancement = DemandeFinancement.createFromEvents([
+      new DemandeFinancementCreated(
+        demandeFinancementId,
+        author,
+        demandeFinancementContent,
+      ),
+    ]);
+    const eventsRaised = userDemandeFinancement.ajouterMontantDemande(
+      userDemandeFinancement.id,
+      { id: 'updator' },
+      userDemandeFinancement,
+      { ttc: 123.56 }
+    );
+    chai.expect(eventsRaised).to.be.ofSize(1);
+    const expectedEvent =
+    new MontantDemandeAdded(demandeFinancementId, author, 123.56);
+    chai.expect(eventsRaised).to.be.ofSize(1);
+    chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+  });
+
+  describe('Permission functions', () => {
+    it('canCreateDemandeFinancement should throw an Exception on invalid status', 
+      () => chai.expect(() => DemandeFinancement.canCreateDemandeFinancement(
+        {},
+        {
+          status: 'REGISTERED',
+        })).to.throw(ErrorDomainValidation, 'Demande Financement Status should be REQUESTED or SUPPORTED on Creation'));
+    it('canAddMontantDemande should throw an Exception on negative amount', 
+    () => chai.expect(() => DemandeFinancement.canAddMontantDemande(
+      {},
+      {},
+      {
+        ttc: -1,
+      })).to.throw(ErrorDomainValidation, 'Could not set a negative "MontantDemande"'));
+    it('canDeleteDemandeFinancement should throw an Exception when deleter is not creator', 
+    () => chai.expect(() => DemandeFinancement.canDeleteDemandeFinancement(
+      {
+        id: 'deleter'
+      },
+      {
+        author: {
+          id: 'creator',
+        },
+      })).to.throw(ErrorPermissions, 'Only creator can delete its demandeFinancement'));
+    it('canCreateDemandeFinancement should allow REQUESTED status', 
+    () => DemandeFinancement.canCreateDemandeFinancement(
+      {},
+      {
+        status: 'REQUESTED',
+      }));
+    it('canAddMontantDemande should allow positive amount', 
+    () => DemandeFinancement.canAddMontantDemande(
+      {},
+      {},
+      {
+        ttc: 1.01,
+      }));
+    it('canDeleteDemandeFinancement should allow deletion when deleter === author', 
+    () => DemandeFinancement.canDeleteDemandeFinancement(
+      { id: 'deleter' },
+      { author: { id: 'deleter' }}));
   });
 });

@@ -1,4 +1,4 @@
-const events = require('./src/bus/event');
+const EventBus = require('./src/bus/event');
 const EventPublisher = require('./src/event-publisher');
 const EventStore = require('./src/event-store');
 const idGenerator = require('./src/idGenerator');
@@ -7,9 +7,7 @@ const logger = require('./src/logger');
 const Repository = require('./src/repository');
 
 module.exports = {
-  bus: {
-    events,
-  },
+  EventBus,
   EventPublisher,
   EventStore,
   idGenerator,

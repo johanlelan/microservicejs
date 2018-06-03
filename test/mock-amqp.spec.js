@@ -8,7 +8,8 @@ const EventDemandeFinancementAddMontantDemande = require('../command/src/modules
 
 let eventNumber = 0;
 function consumeEvents(messageHandler) {
-  const mockAMQPCreateEvent = {
+  // amqp delivers buffer event instead of plain JSON
+  const mockAMQPCreateEvent = Buffer.from(JSON.stringify({
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
@@ -22,8 +23,8 @@ function consumeEvents(messageHandler) {
           ttc: 10001.23
         },
       }),
-  };
-  const mockAMQPAddMontantDemandeEvent = {
+  }));
+  const mockAMQPAddMontantDemandeEvent = Buffer.from(JSON.stringify({
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
@@ -34,8 +35,8 @@ function consumeEvents(messageHandler) {
       {
         ttc: 23456.78
       }),
-  };
-  const mockAMQPDeleteEvent = {
+  }));
+  const mockAMQPDeleteEvent = Buffer.from(JSON.stringify({
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
@@ -44,7 +45,7 @@ function consumeEvents(messageHandler) {
       new DemandeFinancementId('test-from-AMQP'),
       'amqp-user',
     ),
-  };
+  }));
   if (eventNumber === 0) {
     eventNumber += 1;
     return messageHandler(mockAMQPCreateEvent);
@@ -69,6 +70,8 @@ function consumeCommands(messageHandler) {
   return messageHandler(mockAMQPCommand);
 };
 
+exports.propagateEvents = [];
+
 exports.channelStub = {
   isConnected: true,
   assertQueue: () => {
@@ -76,6 +79,7 @@ exports.channelStub = {
   },
   sendToQueue: (queue, message, options) => {
     //console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
+    exports.propagateEvents.push(message);
     return Promise.resolve();
   },
   prefetch: () => {

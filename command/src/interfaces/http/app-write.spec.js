@@ -112,7 +112,6 @@ describe('WRITE API', () => {
       done(err);
     }).auth(username, password);
   });
-
   it('Should return 400 When Create Demande Financement With invalid Status', (done) => {
     const options = {
       method: 'POST',
@@ -130,7 +129,6 @@ describe('WRITE API', () => {
       done(err);
     }).auth(username, password);
   });
-
   it('Add MontantDemande to an existing DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
@@ -166,7 +164,6 @@ describe('WRITE API', () => {
       }).auth(username, password);
     }).auth(username, password);
   });
-
   it('Add an invalid MontantDemande to an existing DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
@@ -201,7 +198,6 @@ describe('WRITE API', () => {
       }).auth(username, password);
     }).auth(username, password);
   });
-
   it('Delete a DemandeFinancement', (done) => {
     const options = {
       method: 'POST',
@@ -233,7 +229,6 @@ describe('WRITE API', () => {
       }).auth(username, password);
     }).auth(username, password);
   });
-
   it('Should return 204 on DELETE when unkonwn Demande-Financement', (done) => {
     const options = {
       method: 'DELETE',

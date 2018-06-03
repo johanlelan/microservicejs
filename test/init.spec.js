@@ -36,9 +36,12 @@ mockBus.stub.callsFake(() => {
   } else if (connection === 1) {
     connection = 2;
     return Promise.resolve(mockBus.connect);
-  } else if (connection === 2) {
+  } else if (process.env.API_PORT === 3002) {
     connection = 3;
-    return Promise.reject({ message: 'Mock a connect error'});
+    return Promise.resolve(mockBus.connect);
+  } else if (process.env.API_PORT === 3003) {
+    connection = 4;
+    return Promise.resolve(mockBus.connect);
   }
   return Promise.resolve(mockBus.connect);
 });
@@ -71,7 +74,7 @@ before((donePreparing) => {
     .catch(donePreparing);
   });
 });
-/*after((doneCleaning) => {
+after((doneCleaning) => {
   if (ending) return doneCleaning();
   process.env.API_PORT = 3002;
   writeAPI.run(undefined, logger, err => {
@@ -86,4 +89,4 @@ before((donePreparing) => {
     })
     .catch(doneCleaning);
   });
-});*/
+});
