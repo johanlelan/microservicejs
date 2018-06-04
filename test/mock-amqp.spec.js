@@ -9,12 +9,12 @@ const EventDemandeFinancementAddMontantDemande = require('../command/src/modules
 let eventNumber = 0;
 function consumeEvents(messageHandler) {
   // amqp delivers buffer event instead of plain JSON
-  const mockAMQPCreateEvent = Buffer.from(JSON.stringify({
+  const mockAMQPCreateEvent = {
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
     },
-    payload: new EventDemandeFinancementCreated(
+    content: Buffer.from(JSON.stringify(new EventDemandeFinancementCreated(
       new DemandeFinancementId('test-from-AMQP'),
       'amqp-user',
       {
@@ -22,30 +22,30 @@ function consumeEvents(messageHandler) {
         montant: {
           ttc: 10001.23
         },
-      }),
-  }));
-  const mockAMQPAddMontantDemandeEvent = Buffer.from(JSON.stringify({
+      }))),
+  };
+  const mockAMQPAddMontantDemandeEvent = {
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
     },
-    payload: new EventDemandeFinancementAddMontantDemande(
+    content: Buffer.from(JSON.stringify(new EventDemandeFinancementAddMontantDemande(
       new DemandeFinancementId('test-from-AMQP'),
       'amqp-user',
       {
         ttc: 23456.78
-      }),
-  }));
-  const mockAMQPDeleteEvent = Buffer.from(JSON.stringify({
+      }))),
+  };
+  const mockAMQPDeleteEvent = {
     properties: {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
     },
-    payload: new EventDemandeFinancementDeleted(
+    content: Buffer.from(JSON.stringify(new EventDemandeFinancementDeleted(
       new DemandeFinancementId('test-from-AMQP'),
       'amqp-user',
-    ),
-  }));
+    ))),
+  };
   if (eventNumber === 0) {
     eventNumber += 1;
     return messageHandler(mockAMQPCreateEvent);
@@ -63,7 +63,7 @@ function consumeCommands(messageHandler) {
       replyTo: 'test-queue',
       correlationId: 'mockAMQPMessage',
     },
-    payload: {
+    content: {
       name: 'test-command',
     },
   };

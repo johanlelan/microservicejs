@@ -20,7 +20,7 @@ exports.create = (amqp) => {
   ]);
   const consumeIncomingEvents = (channel, eventStore, logger) => {
     function saveEvent(event) {
-      eventStore.append(JSON.parse(event).payload);
+      eventStore.append(JSON.parse(event.content));
       logger.info(`Append event ${event.name} into eventStore`);
       return Promise.resolve();
     }

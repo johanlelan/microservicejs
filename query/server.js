@@ -21,13 +21,10 @@ publisher.onAny((event) => {
 
 debug('[Command] handler created');
 // connect to message broker
-eventBus.connect(publisher, eventStore, undefined, Infrastructure.logger)
-  .then((channel) => {
-    const promises = [
-      eventBus.consumeIncomingEvents(channel, eventStore),
-    ];
-    return Promise.all(promises);
-  });
+eventBus.connect(publisher, eventStore, Infrastructure.logger)
+  .then(channel => Promise.all([
+    eventBus.consumeIncomingEvents(channel, eventStore),
+  ]));
 readAPI.run(eventStore, Infrastructure.logger, (errQuery) => {
   if (errQuery) { throw (errQuery); }
   debug('[Query] HTTP API started');

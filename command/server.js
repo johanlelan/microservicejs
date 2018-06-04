@@ -13,6 +13,7 @@ const writeAPI = require('./src/interfaces/http/app');
 
 const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
+const commandBus = Infrastructure.CommandBus.create(amqp);
 const eventBus = Infrastructure.EventBus.create(amqp);
 
 // every published events should be saved into event-store
@@ -24,18 +25,20 @@ handlers(eventStore, publisher, Infrastructure.logger)
   .then((handler) => {
     debug('[Command] handler created');
     // connect to message broker
-    eventBus.connect(publisher, eventStore, handler, Infrastructure.logger)
-      .then((channel) => {
-        const promises = [
+    Promise.all([
+      eventBus.connect(publisher, eventStore, Infrastructure.logger)
+        .then(channel => Promise.all([
           eventBus.propagateEvents(publisher, channel, Infrastructure.logger),
-          eventBus.consumeIncomingCommands(
+        ])),
+      commandBus.connect(handler, Infrastructure.logger)
+        .then(channel => Promise.all([
+          commandBus.consumeIncomingCommands(
             handler,
             channel,
             Infrastructure.logger,
           ),
-        ];
-        return Promise.all(promises);
-      });
+        ])),
+    ]);
     writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
       if (errCommand) { throw (errCommand); }
       debug('[Command] HTTP API started');
