@@ -27,7 +27,7 @@ handlers(eventStore, publisher, Infrastructure.logger)
     eventBus.connect(publisher, eventStore, handler, Infrastructure.logger)
       .then((channel) => {
         const promises = [
-          eventBus.propageEvents(publisher, channel, Infrastructure.logger),
+          eventBus.propagateEvents(publisher, channel, Infrastructure.logger),
           eventBus.consumeIncomingCommands(
             handler,
             channel,
