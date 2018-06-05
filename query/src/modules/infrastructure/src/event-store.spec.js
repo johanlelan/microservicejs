@@ -5,10 +5,11 @@ const chai = require('chai');
 const assertArrays = require('chai-arrays');
 const uuid = require('uuid');
 
-const EventDontContainsId = require('./EventDontContainsId');
-const EventDontContainsAggregateId = require('./EventDontContainsAggregateId');
-const EventDontContainsAuthor = require('./EventDontContainsAuthor');
-const EventDontContainsTimestamp = require('./EventDontContainsTimestamp');
+const EventShouldBeNamed = require('./EventShouldBeNamed');
+const EventShouldContainsId = require('./EventShouldContainsId');
+const EventShouldContainsAggregateId = require('./EventShouldContainsAggregateId');
+const EventShouldContainsAuthor = require('./EventShouldContainsAuthor');
+const EventShouldContainsTimestamp = require('./EventShouldContainsTimestamp');
 
 const fakeLogger = {
   info: () => (undefined), //console.info,
@@ -40,6 +41,7 @@ describe('Events Store', () => {
   }
   
   function TestEvent(aggregateId, num) {
+    this.name = 'TestEvent';
     this.id = uuid.v4();
     this.aggregateId = aggregateId;
     this.num = num;
@@ -51,32 +53,43 @@ describe('Events Store', () => {
 
   describe('Event validation', () => {
 
-    it('When store event without id Then throw exception', () => {
+    it('When store event without name Then throw exception', () => {
       chai.expect(() => {
         eventsStore.append(new BadEvent());
-      }).to.throw(EventDontContainsId);
+      }).to.throw(EventShouldBeNamed);
+    });
+    it('When store event without id Then throw exception', () => {
+      function EventWithoutId() {
+        this.name = 'EventWithoutId';
+      }
+      chai.expect(() => {
+        eventsStore.append(new EventWithoutId());
+      }).to.throw(EventShouldContainsId);
     });
     it('When store event without aggregateId Then throw exception', () => {
       function EventWithoutAggregateId() {
+        this.name = 'EventWithoutAggregateId';
         this.id = uuid.v4();
       }
       chai.expect(() => {
         eventsStore.append(new EventWithoutAggregateId());
-      }).to. throw(EventDontContainsAggregateId);
+      }).to. throw(EventShouldContainsAggregateId);
     });
     it('When store event of aggregate without timestamp Then throw exception', () => {
       function EventWithoutTimestamp(aggregateId) {
+        this.name = 'EventWithoutTimestamp';
         this.id = uuid.v4();
         this.aggregateId = aggregateId;
       }
       const aggregateId = new AggregateId('AggregateA');
       chai.expect(() => {
         eventsStore.append(new EventWithoutTimestamp(aggregateId));
-      }).to. throw(EventDontContainsTimestamp);
+      }).to. throw(EventShouldContainsTimestamp);
     });
   
     it('When store event of aggregate without author Then throw exception', () => {
       function EventWithoutAuthor(aggregateId) {
+        this.name = 'EventWithoutAuthor';
         this.id = uuid.v4();
         this.aggregateId = aggregateId;
         this.timestamp = Date.now();
@@ -84,7 +97,7 @@ describe('Events Store', () => {
       const aggregateId = new AggregateId('AggregateA');
       chai.expect(() => {
         eventsStore.append(new EventWithoutAuthor(aggregateId));
-      }).to. throw(EventDontContainsAuthor);
+      }).to. throw(EventShouldContainsAuthor);
     });
   });
 

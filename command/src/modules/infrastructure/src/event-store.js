@@ -1,25 +1,29 @@
-const EventDontContainsId = require('./EventDontContainsId');
-const EventDontContainsAggregateId = require('./EventDontContainsAggregateId');
-const EventDontContainsTimestamp = require('./EventDontContainsTimestamp');
-const EventDontContainsAuthor = require('./EventDontContainsAuthor');
+const EventShouldBeNamed = require('./EventShouldBeNamed');
+const EventShouldContainsId = require('./EventShouldContainsId');
+const EventShouldContainsAggregateId = require('./EventShouldContainsAggregateId');
+const EventShouldContainsTimestamp = require('./EventShouldContainsTimestamp');
+const EventShouldContainsAuthor = require('./EventShouldContainsAuthor');
 
 const EventsStore = function EventsStore(logger) {
   const events = [];
 
   this.append = function append(event) {
     logger.info('Append event', event);
+    if (!event.name) {
+      throw new EventShouldBeNamed('Each event should be named', event);
+    }
     const eventName = event.name;
     if (!event.id) {
-      throw new EventDontContainsId(eventName, event);
+      throw new EventShouldContainsId(eventName, event);
     }
     if (!event.aggregateId) {
-      throw new EventDontContainsAggregateId(eventName, event);
+      throw new EventShouldContainsAggregateId(eventName, event);
     }
     if (!event.timestamp) {
-      throw new EventDontContainsTimestamp(eventName, event);
+      throw new EventShouldContainsTimestamp(eventName, event);
     }
     if (!event.author) {
-      throw new EventDontContainsAuthor(eventName, event);
+      throw new EventShouldContainsAuthor(eventName, event);
     }
     logger.info(`event-store : save new event ${eventName} (${event.id})`);
     events.push(event);
