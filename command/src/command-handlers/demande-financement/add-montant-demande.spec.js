@@ -56,9 +56,7 @@ describe('Commands', () => {
           const result = await AddMontantDemandeCommand({
             name: 'addMontantDemande',
             timestamp: Date.now(),
-            user: {
-              id: 'test-user@example.js',
-            },
+            user: new Domain.UserId('test-user@example.js'),
           });
           chai.assert.fail(result);
         } catch (err) {
@@ -70,9 +68,7 @@ describe('Commands', () => {
           const result = await AddMontantDemandeCommand({
             name: 'addMontantDemande',
             timestamp: Date.now(),
-            user: {
-              id: 'test-user@example.js',
-            },
+            user: new Domain.UserId('test-user@example.js'),
             id: '12345',
           });
           chai.assert.fail(result);
@@ -95,9 +91,7 @@ describe('Commands', () => {
           const result = await AddMontantDemandeCommand({
             name: 'addMontantDemande',
             timestamp: Date.now(),
-            user: {
-              id: 'privileges-decision@example.com',
-            },
+            user: new Domain.UserId('privileges-decision@example.com'),
             id: 'abcdef',
             data: {
               ttc: -1,

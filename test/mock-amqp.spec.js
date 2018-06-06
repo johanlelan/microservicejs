@@ -1,6 +1,7 @@
 const amqp = require('amqplib');
 const sinon = require('sinon');
 
+const Domain = require('../command/src/modules/domain');
 const DemandeFinancementId = require('../command/src/modules/domain/src/demande-financement-id');
 const EventDemandeFinancementCreated = require('../command/src/modules/domain/src/event-demande-financement-created');
 const EventDemandeFinancementDeleted = require('../command/src/modules/domain/src/event-demande-financement-deleted');
@@ -16,7 +17,7 @@ function consumeEvents(messageHandler) {
     },
     content: Buffer.from(JSON.stringify(new EventDemandeFinancementCreated(
       new DemandeFinancementId('test-from-AMQP'),
-      'amqp-user',
+      new Domain.UserId('amqp-user'),
       {
         status: 'SUPPORTED',
         montant: {
@@ -31,7 +32,7 @@ function consumeEvents(messageHandler) {
     },
     content: Buffer.from(JSON.stringify(new EventDemandeFinancementAddMontantDemande(
       new DemandeFinancementId('test-from-AMQP'),
-      'amqp-user',
+      new Domain.UserId('amqp-user'),
       {
         ttc: 23456.78
       }))),
@@ -43,7 +44,7 @@ function consumeEvents(messageHandler) {
     },
     content: Buffer.from(JSON.stringify(new EventDemandeFinancementDeleted(
       new DemandeFinancementId('test-from-AMQP'),
-      'amqp-user',
+      new Domain.UserId('amqp-user'),
     ))),
   };
   if (eventNumber === 0) {

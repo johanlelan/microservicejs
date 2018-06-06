@@ -1,3 +1,5 @@
+const UserId = require('./src/user-id');
+const User = require('./src/user');
 const DemandeFinancementId = require('./src/demande-financement-id');
 const DemandeFinancement = require('./src/demande-financement');
 const EventDemandeFinancementCreated = require('./src/event-demande-financement-created');
@@ -10,4 +12,6 @@ module.exports = {
   EventDemandeFinancementCreated,
   EventDemandeFinancementDeleted,
   EventMontantDemandeAdded,
+  UserId,
+  User,
 };

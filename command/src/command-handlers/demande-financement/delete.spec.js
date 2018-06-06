@@ -48,9 +48,7 @@ describe('Commands', () => {
           const result = await DeleteDemandeFinancement({
             name: 'deleteDemandeFinancement',
             timestamp: Date.now(),
-            user: {
-              id: 'test-user@example.js',
-            },
+            user: Domain.UserId('test-user@example.js'),
           });
           chai.assert.fail(result);
         } catch (err) {
@@ -63,10 +61,7 @@ describe('Commands', () => {
       beforeEach(() => {
         fakeEventStore.append(new Domain.EventDemandeFinancementCreated(
           new Domain.DemandeFinancementId('abcdef'),
-          {
-            id: 'me@example.fr',
-            title: 'me',
-          },
+          new Domain.UserId('me@example.fr'),
           {},
         ));
         DeleteDemandeFinancement = require('./delete')(Domain.DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
@@ -76,9 +71,7 @@ describe('Commands', () => {
           const result = await DeleteDemandeFinancement({
             name: 'deleteDemandeFinancement',
             timestamp: Date.now(),
-            user: {
-              id: 'privileges-decision@example.com',
-            },
+            user: new Domain.UserId('privileges-decision@example.com'),
             id: 'abcdef',
           });
           chai.assert.fail(result);
