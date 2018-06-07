@@ -3,18 +3,17 @@ const chai = require('chai');
 
 const EventPublisher = require('../event-publisher');
 
-const DemandeFinancement = require('../../../domain/src/demande-financement');
-const DemandeFinancementId = require('../../../domain/src/demande-financement-id');
-const DemandeFinancementCreated = require('../../../domain/src/event-demande-financement-created');
-const DemandeFinancementMontantDemandeAdded = require('../../../domain/src/event-montant-demande-added');
-const DemandeFinancementDeleted = require('../../../domain/src/event-demande-financement-deleted');
-
 // mock all messaging bus functions
+class mockEvent {
+  constructor() {
+    this.name = 'mockEvent';
+  }
+};
 const mockBus = require('../../../../../../test/mock-amqp.spec');
 const mockCommandHandler = {
-  create: () => { return new DemandeFinancementCreated('commandHandlerMock', { id: 'mock-user' }, {}); },
-  addMontantDemande: () => { return new DemandeFinancementMontantDemandeAdded('commandHandlerMock', { id: 'mock-user' }, { ttc: 1.01 }); },
-  delete: () => { return new DemandeFinancementDeleted('commandHandlerMock', { id: 'mock-user' }); },
+  create: () => { return new mockEvent(); },
+  addMontantDemande: () => { return new mockEvent(); },
+  delete: () => { return new mockEvent(); },
 };
 let connection = 0;
 const mockAmqp = {
@@ -70,14 +69,7 @@ describe('Event Bus', () => {
         return Promise.all(promises);
       })
       .then(() => {
-        const eventRaised = new DemandeFinancementCreated(
-          new DemandeFinancementId('propagate-event'),
-          {
-            id: 'any-user',
-            title: 'any user'
-          }, {
-            status: 'REQUESTED'
-          });
+        const eventRaised = new mockEvent();
         // publish an event
         eventPublisher.publish(eventRaised);
         chai.expect(mockBus.propagateEvents).to.be.an.array;
