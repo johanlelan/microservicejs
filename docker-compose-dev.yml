@@ -1,52 +1,18 @@
 version: '3'
 services:
-  # zookeeper:
-  #   image: wurstmeister/zookeeper
-  #   ports:
-  #     - "2181:2181"
-  # kafka:
-  #   image: wurstmeister/kafka:0.9.0.0-1
-  #   ports:
-  #     - "9092:9092"
-  #   depends_on:
-  #     - zookeeper
+  # command:
+  #   build: ./command
   #   environment:
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  bus:
+  #     DB_URL: 'mongodb://db:27017'
+  #     AMQP_URL: 'amqp://amqp:5672'
+  #     KAFKA_URL: 'http://zookeeper:2181'
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - amqp
+  amqp:
     image: rabbitmq:management-alpine
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-#  db:
-#    image: mongo:latest
-#    container_name: mongodb
-#    ports:
-#      - "27018:27017"
-#  index:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.8
-#    container_name: elasticsearch
-#    environment:
-#      - bootstrap.memory_lock=true
-#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-#    ulimits:
-#      memlock:
-#        soft: -1
-#        hard: -1
-#    ports:
-#      - "9200:9200"
-#  graph:
-#    image: orientdb:latest
-#    container_name: orientdb
-#    ports:
-#      - "2424:2424"
-#      - "2480:2480"
-#    environment:
-#      ORIENTDB_ROOT_PASSWORD: 'admin'
-#  cache:
-#    image: redis:latest
-#    container_name: redis
-#    ports:
-#      - "6379:6379"

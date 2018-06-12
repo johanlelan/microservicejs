@@ -2,7 +2,7 @@ const infrastructure = require('../../infrastructure');
 
 class MontantDemandeAdded {
   constructor(aggregateId, author, montant) {
-    this.name = this.constructor.name;
+    this.type = this.constructor.name;
     this.id = infrastructure.idGenerator.generate();
     this.aggregateId = aggregateId;
     this.author = author;

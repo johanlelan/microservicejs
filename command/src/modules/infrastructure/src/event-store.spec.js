@@ -41,7 +41,7 @@ describe('Events Store', () => {
   }
   
   function TestEvent(aggregateId, num) {
-    this.name = 'TestEvent';
+    this.type = 'TestEvent';
     this.id = uuid.v4();
     this.aggregateId = aggregateId;
     this.num = num;
@@ -53,14 +53,14 @@ describe('Events Store', () => {
 
   describe('Event validation', () => {
 
-    it('When store event without name Then throw exception', () => {
+    it('When store event without type Then throw exception', () => {
       chai.expect(() => {
         eventsStore.append(new BadEvent());
       }).to.throw(EventShouldBeNamed);
     });
     it('When store event without id Then throw exception', () => {
       function EventWithoutId() {
-        this.name = 'EventWithoutId';
+        this.type = 'EventWithoutId';
       }
       chai.expect(() => {
         eventsStore.append(new EventWithoutId());
@@ -68,7 +68,7 @@ describe('Events Store', () => {
     });
     it('When store event without aggregateId Then throw exception', () => {
       function EventWithoutAggregateId() {
-        this.name = 'EventWithoutAggregateId';
+        this.type = 'EventWithoutAggregateId';
         this.id = uuid.v4();
       }
       chai.expect(() => {
@@ -77,7 +77,7 @@ describe('Events Store', () => {
     });
     it('When store event of aggregate without timestamp Then throw exception', () => {
       function EventWithoutTimestamp(aggregateId) {
-        this.name = 'EventWithoutTimestamp';
+        this.type = 'EventWithoutTimestamp';
         this.id = uuid.v4();
         this.aggregateId = aggregateId;
       }
@@ -89,7 +89,7 @@ describe('Events Store', () => {
   
     it('When store event of aggregate without author Then throw exception', () => {
       function EventWithoutAuthor(aggregateId) {
-        this.name = 'EventWithoutAuthor';
+        this.type = 'EventWithoutAuthor';
         this.id = uuid.v4();
         this.aggregateId = aggregateId;
         this.timestamp = Date.now();

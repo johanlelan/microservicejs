@@ -16,7 +16,7 @@ const fakeLogger = {
 };
 class MockEvent {
   constructor(aggregateId) {
-    this.name = 'MockEvent';
+    this.type = 'MockEvent';
     this.id = 'eventId';
     this.aggregateId = aggregateId;
     this.timestamp = Date.now;

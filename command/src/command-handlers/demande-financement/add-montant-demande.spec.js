@@ -99,7 +99,7 @@ describe('Commands', () => {
           });
           chai.assert.fail(result);
         } catch (err) {
-          chai.assert.equal(err.name, 'ErrorDomainValidation');
+          chai.assert.equal(err.type, 'ErrorDomainValidation');
         }
       });
     });

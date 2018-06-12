@@ -9,23 +9,23 @@ const EventsStore = function EventsStore(logger) {
 
   this.append = function append(event) {
     logger.info('Append event', event);
-    if (!event.name) {
-      throw new EventShouldBeNamed('Each event should be named', event);
+    if (!event.type) {
+      throw new EventShouldBeNamed('Each event should be typed', event);
     }
-    const eventName = event.name;
+    const eventType = event.type;
     if (!event.id) {
-      throw new EventShouldContainsId(eventName, event);
+      throw new EventShouldContainsId(eventType, event);
     }
     if (!event.aggregateId) {
-      throw new EventShouldContainsAggregateId(eventName, event);
+      throw new EventShouldContainsAggregateId(eventType, event);
     }
     if (!event.timestamp) {
-      throw new EventShouldContainsTimestamp(eventName, event);
+      throw new EventShouldContainsTimestamp(eventType, event);
     }
     if (!event.author) {
-      throw new EventShouldContainsAuthor(eventName, event);
+      throw new EventShouldContainsAuthor(eventType, event);
     }
-    logger.info(`event-store : save new event ${eventName} (${event.id})`);
+    logger.info(`event-store : save new event ${eventType} (${event.id})`);
     events.push(event);
   };
 

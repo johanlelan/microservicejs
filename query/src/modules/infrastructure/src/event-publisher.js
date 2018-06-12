@@ -6,7 +6,7 @@ const EventPublisher = function EventPublisher(logger) {
   const eventEmitter = new events.EventEmitter();
 
   self.on = function on(eventType, action) {
-    eventEmitter.on(eventType.name, action);
+    eventEmitter.on(eventType, action);
 
     return self;
   };
@@ -20,9 +20,9 @@ const EventPublisher = function EventPublisher(logger) {
   self.publish = function publish(event) {
     eventEmitter.emit('*', event);
 
-    const eventName = event.constructor.name;
-    eventEmitter.emit(eventName, event);
-    logger.info(`publish - emit ${eventName} event`);
+    const eventType = event.constructor.name;
+    eventEmitter.emit(eventType, event);
+    logger.info(`publish - emit ${eventType} event`);
   };
 };
 

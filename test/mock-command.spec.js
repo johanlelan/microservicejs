@@ -1,6 +1,3 @@
-const amqp = require('amqplib');
-const sinon = require('sinon');
-
 const Domain = require('../command/src/modules/domain');
 const DemandeFinancementId = require('../command/src/modules/domain/src/demande-financement-id');
 const EventDemandeFinancementCreated = require('../command/src/modules/domain/src/event-demande-financement-created');
@@ -97,17 +94,12 @@ exports.channelStub = (publisher, eventStore, logger) => {
   };
 };
 
-exports.connect = (publisher, eventStore, logger) => {
+exports.connect = (handler, publisher, eventStore, logger) => {
   publisher.onAny((event) => {
-    logger.info(`Propagate event ${event.name}`);
+    logger.info(`Propagate event ${event.type}`);
     exports.propagateEvents.push(event);
   });
   return Promise.resolve({
     createChannel: () => Promise.resolve(exports.channelStub(publisher, eventStore, logger)),
   });
 };
-
-// mock amqp
-let connection = 0;
-const stub = sinon.stub(amqp, 'connect');
-exports.stub = stub;

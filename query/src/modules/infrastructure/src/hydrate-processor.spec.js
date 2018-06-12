@@ -3,12 +3,12 @@ const chai = require('chai');
 
 describe('Hydrate Processor', () => {
   const EventA = function EventA() {
-    this.name = 'EventA';
+    this.type = 'EventA';
     this.userId = 'UserA';
   };
 
   const EventB = function EventB() {
-    this.name = 'EventB';
+    this.type = 'EventB';
     this.valueB = 'ValueB';
   };
 

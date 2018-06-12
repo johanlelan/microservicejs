@@ -4,10 +4,10 @@ const chai = require('chai');
 // mock all messaging bus functions
 class mockEvent {
   constructor() {
-    this.name = 'mockEvent';
+    this.type = 'mockEvent';
   }
 };
-const mockBus = require('../../../../../../test/mock-amqp.spec');
+const mockBus = require('../../../../../../test/mock-command.spec');
 const mockCommandHandler = {
   create: () => { return new mockEvent(); },
   addMontantDemande: () => { return new mockEvent(); },
@@ -32,14 +32,16 @@ const Bus = require('./command');
 const commandBus = Bus.create(mockAmqp);
 
 const mockLogger = {
+  debug: () => (undefined), // console.debug,
   info: () => (undefined), // console.info,
   warn: () => (undefined), // console.warn,
+  error: () => (undefined), // console.error,
 };
 
 const mockChannel = mockBus.channelStub;
 
 describe('Command Bus', () => {
-  it('Should init a connection', () => commandBus.connect(mockCommandHandler, mockLogger));
+  it('Should init a connection', () => commandBus.connect(mockCommandHandler, undefined, undefined, mockLogger));
   /* describe.skip('When Receiving Demande-financement Commands', () => {
     it('Should manage createDemandeFinancement', () => commandBus.buildMessageHandler(mockCommandHandler, {
         isConnected: true,

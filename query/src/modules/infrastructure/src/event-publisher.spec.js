@@ -19,7 +19,7 @@ describe('EventPublisher', () => {
 
   it('Given different handlers When publish Then call right handler', () => {
     let eventBReceived = false;
-    publisher.on(EventB, () => {
+    publisher.on('EventB', () => {
       eventBReceived = true;
     });
 
@@ -30,7 +30,7 @@ describe('EventPublisher', () => {
 
   it('Given handler When publish Then pass event to action', () => {
     let eventReceived;
-    publisher.on(EventA, (event) => {
+    publisher.on('EventA', (event) => {
       eventReceived = event;
     });
 
@@ -42,7 +42,7 @@ describe('EventPublisher', () => {
 
   it('Given handler When publish Then call handler', () => {
     let called = false;
-    publisher.on(EventC, () => {
+    publisher.on('EventC', () => {
       called = true;
     });
 

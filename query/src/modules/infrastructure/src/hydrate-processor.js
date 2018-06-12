@@ -16,9 +16,8 @@ const HydrateProcessor = function HydrateProcessor() {
     }
 
     const event = events;
-    const typeName = event.name;
 
-    const handler = handlers[typeName];
+    const handler = handlers[event.type];
     if (handler) {
       handler.call(self, event);
     }

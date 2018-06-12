@@ -29,7 +29,7 @@ handlers(eventStore, publisher, Infrastructure.logger)
     Infrastructure.logger.info('[Command] handler created');
     // connect to message broker
     Promise.all([
-      eventBus.connect(publisher, eventStore, Infrastructure.logger),
+      eventBus.connect(publisher, eventStore, Infrastructure.logger, 'COMMAND'),
       //        .then(channel => Promise.all([
       //          eventBus.propagateEvents(publisher, channel, Infrastructure.logger),
       //        ])),

@@ -52,7 +52,7 @@ exports.connect = (handler, publisher, eventStore, logger) => {
           logger,
         ),
       ]).then(() => {
-        logger.info('[BUS] [Command] AMQP connection established');
+        logger.info('[Command] [AMQP] connection established');
       });
     }));
 };

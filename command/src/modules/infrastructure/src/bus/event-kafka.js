@@ -18,7 +18,7 @@ const KafkaService = {
     producer.on('ready', () => {
       logger.info('Kafka Producer is connected and ready.');
       publisher.onAny((event) => {
-        logger.info(`Propagate event ${event.name}`);
+        logger.info(`Propagate event ${event.type}`);
         // Create a new payload
         const record = [
           {
@@ -53,7 +53,7 @@ const KafkaService = {
     consumer.on('message', (message) => {
       function saveEvent(event) {
         eventStore.append(JSON.parse(event.content));
-        logger.info(`Append event ${event.name} into eventStore`);
+        logger.info(`Append event ${event.type} into eventStore`);
         return Promise.resolve();
       }
       logger.info('Kafka consumer recieves a new event', message);
@@ -63,7 +63,6 @@ const KafkaService = {
 
       // Events is a Sequelize Model Object.
       const event = {
-        name: decodedMessage.name,
         id: decodedMessage.id,
         type: decodedMessage.type,
         // TODO JLL: should use type instead of name into event

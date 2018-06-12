@@ -22,7 +22,7 @@ publisher.onAny((event) => {
 debug('Initializing query server...');
 
 // connect to message broker
-eventBus.connect(publisher, eventStore, Infrastructure.logger);
+eventBus.connect(publisher, eventStore, Infrastructure.logger, 'QUERY');
 readAPI.run(eventStore, Infrastructure.logger, (errQuery) => {
   if (errQuery) { throw (errQuery); }
   Infrastructure.logger.info('[Query] HTTP API started');

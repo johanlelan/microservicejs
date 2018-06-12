@@ -6,10 +6,10 @@ const EventPublisher = require('../event-publisher');
 // mock all messaging bus functions
 class mockEvent {
   constructor() {
-    this.name = 'mockEvent';
+    this.type = 'mockEvent';
   }
 };
-const mockBus = require('../../../../../../test/mock-amqp.spec');
+const mockBus = require('../../../../../../test/mock-event.spec');
 const mockCommandHandler = {
   create: () => { return new mockEvent(); },
   addMontantDemande: () => { return new mockEvent(); },
@@ -44,8 +44,10 @@ const mockEventStore = {
 };
 
 const mockLogger = {
+  debug: () => (undefined), // console.debug,
   info: () => (undefined), // console.info,
   warn: () => (undefined), // console.warn,
+  error: () => (undefined), // console.error,
 };
 
 const eventPublisher = EventPublisher.create(mockLogger);
@@ -53,9 +55,9 @@ const eventPublisher = EventPublisher.create(mockLogger);
 const mockChannel = mockBus.channelStub;
 
 describe('Event Bus', () => {
-  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockEventStore, mockLogger)
+  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockEventStore, mockLogger, 'TEST')
     .then(() => {
-      return eventBus.connect(eventPublisher, mockEventStore, mockLogger)
+      return eventBus.connect(eventPublisher, mockEventStore, mockLogger, 'TEST')
       .then(() => {
         chai.assert.isOk(true);
       });
