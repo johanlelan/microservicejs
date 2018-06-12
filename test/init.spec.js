@@ -12,6 +12,8 @@ const mockBus = require('./mock-amqp.spec');
 const handlers = require('../command/src/command-handlers/index');
 const chai = require('chai');
 
+const eventMessaging = require('../command/src/modules/infrastructure/src/bus/event').create(mockBus);
+const commandMessaging = require('../command/src/modules/infrastructure/src/bus/command').create(mockBus);
 const eventStore = require('../command/src/modules/infrastructure/src/event-store').create(logger);
 const publisher = require('../command/src/modules/infrastructure/src/event-publisher').create(logger);
 const writeAPI = require('../command/src/interfaces/http/app');
@@ -49,12 +51,14 @@ before((donePreparing) => {
   if (init) return donePreparing();
   // wait until app is started
   // first connection will fail
-  amqp.connect().then((bus) => {
+  commandMessaging.connect(publisher, eventStore, logger).then((bus) => {
     chai.assert.fail('Should fail on first connection');
   }).catch(() => {
     chai.assert.isOk(true);
-    amqp.connect()
-    .then(bus => bus.createChannel())
+    commandMessaging.connect(publisher, eventStore, logger)
+    .then(bus => {
+      return bus.createChannel()
+    })
     .then(channel => {
       // create command handler
       handlers(eventStore, publisher, logger, channel)
@@ -80,7 +84,7 @@ after((doneCleaning) => {
   writeAPI.run(undefined, logger, err => {
     if (err) return doneCleaning(err);
     process.env.API_PORT = 3003;
-    amqp.connect().then(bus => bus.createChannel())
+    eventMessaging.connect(publisher, eventStore, logger).then(bus => bus.createChannel())
     .then(channel => {
       return readAPI.run(channel, eventStore, err => {
         ending = true;

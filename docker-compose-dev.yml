@@ -50,27 +50,3 @@ services:
 #    container_name: redis
 #    ports:
 #      - "6379:6379"
-  command:
-    build: ./command
-    environment:
-      DB_URL: 'mongodb://db:27017'
-      AMQP_URL: 'amqp:5672'
-      KAFKA_URL: 'zookeeper:2181'
-    ports:
-      - "3000:3000"
-    depends_on:
-      - bus
-#      - kafka
-#      - db
-  query:
-    build: ./query
-    environment:
-      DB_URL: 'mongodb://db:27017'
-      AMQP_URL: 'amqp:5672'
-      KAFKA_URL: 'zookeeper:2181'
-    ports:
-      - "3001:3001"
-    depends_on:
-      - bus
-#      - kafka
-#      - db

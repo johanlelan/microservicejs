@@ -4,7 +4,7 @@ LABEL maintainer="johan.lelan@gmail.com"
 WORKDIR /src
 
 # Provides cached layer for node_modules
-ADD package.json .npmrc /src/
+ADD package.json package-lock.json .npmrc /src/
 
 # We add some dependencies for node-gyp native node_modules
 # https://github.com/nodejs/node-gyp

@@ -73,30 +73,38 @@ function consumeCommands(messageHandler) {
 
 exports.propagateEvents = [];
 
-exports.channelStub = {
-  isConnected: true,
-  assertQueue: () => {
-    return Promise.resolve();
-  },
-  sendToQueue: (queue, message, options) => {
-    //console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
-    exports.propagateEvents.push(message);
-    return Promise.resolve();
-  },
-  prefetch: () => {
-    return Promise.resolve();
-  },
-  consume: (queue, messageHandler) => {
-    if (queue.indexOf('.in') > -1) {
-      return consumeCommands(messageHandler);
-    } else {
-      return consumeEvents(messageHandler);
-    }
-  },
+exports.channelStub = (publisher, eventStore, logger) => {
+  const channel = {
+    isConnected: true,
+    assertQueue: () => {
+      return Promise.resolve();
+    },
+    sendToQueue: (queue, message, options) => {
+      //console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
+      exports.propagateEvents.push(message);
+      return Promise.resolve();
+    },
+    prefetch: () => {
+      return Promise.resolve();
+    },
+    consume: (queue, messageHandler) => {
+      if (queue.indexOf('.in') > -1) {
+        return consumeCommands(messageHandler);
+      } else {
+        return consumeEvents(messageHandler);
+      }
+    },
+  };
 };
 
-exports.connect = {
-  createChannel: () => Promise.resolve(exports.channelStub),
+exports.connect = (publisher, eventStore, logger) => {
+  publisher.onAny((event) => {
+    logger.info(`Propagate event ${event.name}`);
+    exports.propagateEvents.push(event);
+  });
+  return Promise.resolve({
+    createChannel: () => Promise.resolve(exports.channelStub(publisher, eventStore, logger)),
+  });
 };
 
 // mock amqp
