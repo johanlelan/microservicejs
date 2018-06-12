@@ -1,14 +1,15 @@
-const debug = require('debug')('messaging');
+const debug = require('debug')('microservice:infrastructure:bus:events');
 
 exports.create = (IBus) => {
+  debug('Creating events Bus...');
   const connect = (publisher, eventStore, logger, err) => {
     if (err && err.message !== 'Connection closing') {
-      debug('Event connection failed (waiting for reconnection)', err.message);
+      logger.error('[BUS] [Event] connection failed (waiting for reconnection)', err.message);
       return connect(publisher, eventStore, logger);
     }
     return IBus.connect(publisher, eventStore, logger)
       .then((connection) => {
-        debug('Event connection established');
+        logger.info('[BUS] [Event] connection established');
         return connection;
       })
       .catch(errConn => connect(publisher, eventStore, logger, errConn));

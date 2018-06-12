@@ -1,4 +1,4 @@
-const debug = require('debug')('messaging');
+const debug = require('debug')('microservice:infrastructure:bus:commands:amqp');
 const amqp = require('amqplib');
 
 const queue = 'demandes-financement';
@@ -52,7 +52,7 @@ exports.connect = (handler, publisher, eventStore, logger) => {
           logger,
         ),
       ]).then(() => {
-        logger.info('Command AMQP connection established');
+        logger.info('[BUS] [Command] AMQP connection established');
       });
     }));
 };

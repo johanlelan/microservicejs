@@ -1,7 +1,7 @@
 const Debug = require('debug');
 const amqp = require('amqplib');
 
-const debug = Debug('messaging');
+const debug = Debug('microservice:infrastructure:bus:commands:amqp');
 
 const queue = 'demandes-financement';
 

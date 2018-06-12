@@ -14,7 +14,7 @@ services:
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   #   volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
-  bus:
+  amqp:
     image: rabbitmq:management-alpine
     container_name: rabbitmq
     ports:
@@ -54,23 +54,23 @@ services:
     build: ./command
     environment:
       DB_URL: 'mongodb://db:27017'
-      AMQP_URL: 'amqp:5672'
-      KAFKA_URL: 'zookeeper:2181'
+      AMQP_URL: 'amqp://amqp:5672'
+      KAFKA_URL: 'http://zookeeper:2181'
     ports:
       - "3000:3000"
     depends_on:
-      - bus
+      - amqp
 #      - kafka
 #      - db
   query:
     build: ./query
     environment:
       DB_URL: 'mongodb://db:27017'
-      AMQP_URL: 'amqp:5672'
-      KAFKA_URL: 'zookeeper:2181'
+      AMQP_URL: 'amqp://amqp:5672'
+      KAFKA_URL: 'http://zookeeper:2181'
     ports:
       - "3001:3001"
     depends_on:
-      - bus
+      - amqp
 #      - kafka
 #      - db

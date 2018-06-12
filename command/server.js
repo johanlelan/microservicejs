@@ -4,7 +4,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 // Certificate
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED || '0';
 
-const debug = require('debug')('server');
+const debug = require('debug')('microservice:command:server');
 
 const eventAMQP = require('./src/modules/infrastructure/src/bus/event.amqp');
 const commandAMQP = require('./src/modules/infrastructure/src/bus/command.amqp');
@@ -22,9 +22,11 @@ publisher.onAny((event) => {
   eventStore.append(event);
 });
 
+debug('Initializing command server...');
+
 handlers(eventStore, publisher, Infrastructure.logger)
   .then((handler) => {
-    debug('[Command] handler created');
+    Infrastructure.logger.info('[Command] handler created');
     // connect to message broker
     Promise.all([
       eventBus.connect(publisher, eventStore, Infrastructure.logger),
@@ -42,6 +44,6 @@ handlers(eventStore, publisher, Infrastructure.logger)
     ]);
     writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
       if (errCommand) { throw (errCommand); }
-      debug('[Command] HTTP API started');
+      Infrastructure.logger.info('[Command] HTTP API started');
     });
   });

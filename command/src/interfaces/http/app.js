@@ -1,4 +1,4 @@
-const debug = require('debug')('rest-api');
+const debug = require('debug')('microservice:command:rest-api');
 const express = require('express');
 const bodyParser = require('body-parser');
 const pino = require('express-pino-logger')();
@@ -92,8 +92,8 @@ function runApp(commandHandler, logger, callback) {
   }));
 
   return app.listen(port, () => {
-    debug(`Listening on port http://localhost:${port}!`);
-    debug(`API http://localhost:${port}/demandes-financement`);
+    logger.info(`Listening on port http://localhost:${port}!`);
+    logger.info(`API http://localhost:${port}/demandes-financement`);
     return callback();
   });
 }

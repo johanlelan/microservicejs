@@ -1,6 +1,7 @@
-import debug from 'debug';
+import Debug from 'debug';
 import kafka from 'kafka-node';
 
+const debug = Debug('microservice:infrastructure:bus:commands:kafka');
 const topic = 'demandes-financement';
 
 const KafkaService = {

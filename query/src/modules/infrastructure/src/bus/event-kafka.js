@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import kafka from 'kafka-node';
 
-const debug = Debug('messaging');
+const debug = Debug('microservice:infrastructure:bus:events:kafka');
 
 const topic = 'demandes-financement';
 
