@@ -6,16 +6,18 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('microservice:command:server');
 
-const eventAMQP = require('./src/modules/infrastructure/src/bus/event.amqp');
-const commandAMQP = require('./src/modules/infrastructure/src/bus/command.amqp');
+// const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
+// const concreteCommand = require('./src/modules/infrastructure/src/bus/command.amqp');
+const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
+const concreteCommand = require('./src/modules/infrastructure/src/bus/command.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
 const handlers = require('./src/command-handlers/index.js');
 const writeAPI = require('./src/interfaces/http/app');
 
 const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
-const commandBus = Infrastructure.CommandBus.create(commandAMQP);
-const eventBus = Infrastructure.EventBus.create(eventAMQP);
+const eventBus = Infrastructure.EventBus.create(concreteEvent);
+const commandBus = Infrastructure.CommandBus.create(concreteCommand);
 
 // every published events should be saved into event-store
 publisher.onAny((event) => {

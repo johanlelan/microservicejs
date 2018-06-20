@@ -6,13 +6,14 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('microservice:query:server');
 
-const eventAMQP = require('./src/modules/infrastructure/src/bus/event.amqp');
+// const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
+const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
 const readAPI = require('./src/interfaces/http//app');
 
 const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
-const eventBus = Infrastructure.EventBus.create(eventAMQP);
+const eventBus = Infrastructure.EventBus.create(concreteEvent);
 
 // every published events should be saved into event-store
 publisher.onAny((event) => {
