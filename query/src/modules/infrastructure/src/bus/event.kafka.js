@@ -1,5 +1,8 @@
 const debug = require('debug')('microservice:infrastructure:bus:events:kafka');
 const kafka = require('kafka-node');
+const KafkaStreams = require('kafka-streams');
+
+const config = require('./streams-config.kafka');
 
 const topic = 'demandes-financement';
 
@@ -47,29 +50,16 @@ const KafkaService = {
           logger.error('Error on event producer', err);
         });
       } else {
-        const consumerOptions = {
-          autoCommit: true,
-          fetchMaxWaitMs: 1000,
-          fetchMaxBytes: 1024 * 1024,
-          encoding: 'buffer',
-        };
-        const consumer = new kafka.HighLevelConsumer(client, [{
-          topic: `${topic}.events.out`,
-        }], consumerOptions);
-        consumer.on('message', (message) => {
-          function saveEvent(event) {
-            eventStore.append(event);
-            logger.info(`Append event ${event.type} into eventStore`);
-            return Promise.resolve();
-          }
-          logger.info('Kafka consumer recieves a new event', message);
-          // Read string into a buffer.
-          const buf = Buffer.from(message.value, 'binary');
-          const event = JSON.parse(buf.toString());
-          return saveEvent(event);
-        }).on('error', (err) => {
-          logger.error('Error on consumer', err);
-        });
+        const kafkaStreams = new KafkaStreams(config);
+        const extractEvent = message => message.value;
+        const stream = kafkaStreams.getKStream();
+        stream
+          .from(`${topic}.events.out`)
+          .map(extractEvent)
+          .tap(event => logger.info(event))
+          .map()
+          .to(`${topic}.states.out`);
+        stream.start();
       }
     });
     logger.info('Event Kafka connection initialized');
