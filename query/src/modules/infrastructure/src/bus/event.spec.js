@@ -52,12 +52,12 @@ const mockLogger = {
 
 const eventPublisher = EventPublisher.create(mockLogger);
 
-const mockChannel = mockBus.channelStub;
+const mockRepository = {};
 
 describe('Event Bus', () => {
-  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockEventStore, mockLogger, 'TEST')
+  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockEventStore, mockRepository, mockLogger, 'TEST')
     .then(() => {
-      return eventBus.connect(eventPublisher, mockEventStore, mockLogger, 'TEST')
+      return eventBus.connect(eventPublisher, mockEventStore, mockRepository, mockLogger, 'TEST')
       .then(() => {
         chai.assert.isOk(true);
       });

@@ -29,7 +29,7 @@ const validate = (command) => {
   }
   throw new ErrorValidation('Command is invalid', { message: 'Command is invalid', errors });
 };
-module.exports = (DemandeFinancement, repository, eventStore, publisher, logger) =>
+module.exports = (DemandeFinancement, repository, publisher, logger) =>
   async function deleteDemandeFinancement(command) {
   // validate inputs
     try {

@@ -4,6 +4,7 @@ const Infrastructure = require('../../modules/infrastructure');
 
 const fakeLogger = {
   info: () => (undefined), // console.info,
+  debug: () => (undefined), // console.debug,
 };
 const fakeEventStore = Infrastructure.EventStore.create(fakeLogger);
 const fakePublisher = Infrastructure.EventPublisher.create(fakeLogger);

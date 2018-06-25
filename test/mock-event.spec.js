@@ -94,7 +94,7 @@ exports.channelStub = (publisher, eventStore, logger) => {
   };
 };
 
-exports.connect = (publisher, eventStore, logger) => {
+exports.connect = (publisher, eventStore, repository, logger) => {
   publisher.onAny((event) => {
     logger.info(`Propagate event ${event.type}`);
     exports.propagateEvents.push(event);

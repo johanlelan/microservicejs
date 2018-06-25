@@ -13,6 +13,7 @@ const MockAggregate = {
 };
 const fakeLogger = {
   info: () => (undefined), //console.info,
+  debug: () => (undefined), //console.debug,
 };
 class MockEvent {
   constructor(aggregateId) {

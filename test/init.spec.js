@@ -11,6 +11,9 @@ const logger = {
 const mockBusEvent = require('./mock-event.spec');
 const mockBusCommand = require('./mock-command.spec');
 
+// Domain
+const Domain = require('../command/src/modules/domain');
+
 const handlers = require('../command/src/command-handlers/index');
 const chai = require('chai');
 
@@ -18,8 +21,9 @@ const eventMessaging = require('../command/src/modules/infrastructure/src/bus/ev
 const commandMessaging = require('../command/src/modules/infrastructure/src/bus/command').create(mockBusCommand);
 const eventStore = require('../command/src/modules/infrastructure/src/event-store').create(logger);
 const publisher = require('../command/src/modules/infrastructure/src/event-publisher').create(logger);
-const writeAPI = require('../command/src/interfaces/http/app');
+const repository = require('../command/src/modules/infrastructure/src/repository').create(Domain.DemandeFinancement, eventStore);
 
+const writeAPI = require('../command/src/interfaces/http/app');
 const readAPI = require('../query/src/interfaces/http/app');
 
 // save all events into events store
@@ -75,12 +79,12 @@ before((donePreparing) => {
     chai.assert.fail('Should fail on first connection');
   }).catch(() => {
     chai.assert.isOk(true);
-    return handlers(eventStore, publisher, logger)
+    return handlers(repository, publisher, logger)
       .then(commandHandler => {
         commandMessaging.connect(commandHandler, publisher, eventStore, logger)
         .then(() => {
           //console.log('[HTTP] start express app');
-          return readAPI.run(eventStore, logger,
+          return readAPI.run(eventStore, repository, logger,
             (err) => {
               if (err) return donePreparing(err);
               return writeAPI.run(commandHandler, logger,
@@ -101,9 +105,9 @@ after((doneCleaning) => {
   writeAPI.run(undefined, logger, err => {
     if (err) return doneCleaning(err);
     process.env.API_PORT = 3003;
-    eventMessaging.connect(publisher, eventStore, logger).then(bus => bus.createChannel())
+    eventMessaging.connect(publisher, eventStore, repository, logger).then(bus => bus.createChannel())
     .then(channel => {
-      return readAPI.run(eventStore, logger, err => {
+      return readAPI.run(eventStore, repository, logger, err => {
         ending = true;
         return doneCleaning(err)
       });

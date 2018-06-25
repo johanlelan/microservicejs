@@ -77,8 +77,10 @@ describe('READ API', () => {
         'X-Request-Id': 'read-1',
       },
     };
+    // wait for event propagation
     return request(options, (err, resp, body) => {
       chai.expect(err).to.be.null;
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       const location = resp.headers.location;
       const getDemandeFinancementOptions = {
@@ -110,8 +112,10 @@ describe('READ API', () => {
         'X-Request-Id': 'read-1',
       },
     };
+    // wait for event propagation
     return request(options, (err, resp, body) => {
       chai.expect(err).to.be.null;
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       const location = resp.headers.location;
       const deleteOptions = {

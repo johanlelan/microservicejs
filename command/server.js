@@ -29,23 +29,13 @@ publisher.onAny((event) => {
 
 debug('Initializing command server...');
 
-handlers(eventStore, publisher, Infrastructure.logger)
+handlers(repository, publisher, Infrastructure.logger)
   .then((handler) => {
     Infrastructure.logger.info('[Command] handler created');
     // connect to message broker
     Promise.all([
       eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'COMMAND'),
-      //        .then(channel => Promise.all([
-      //          eventBus.propagateEvents(publisher, channel, Infrastructure.logger),
-      //        ])),
       commandBus.connect(handler, publisher, eventStore, Infrastructure.logger),
-      //        .then(channel => Promise.all([
-      //          commandBus.consumeIncomingCommands(
-      //            handler,
-      //            channel,
-      //            Infrastructure.logger,
-      //         ),
-      //        ])),
     ]);
     writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
       if (errCommand) { throw (errCommand); }
