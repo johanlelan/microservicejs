@@ -6,6 +6,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('microservice:command:server');
 
+const Domain = require('./src/modules/domain');
+
 // const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
 // const concreteCommand = require('./src/modules/infrastructure/src/bus/command.amqp');
 const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
@@ -18,6 +20,7 @@ const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
 const eventBus = Infrastructure.EventBus.create(concreteEvent);
 const commandBus = Infrastructure.CommandBus.create(concreteCommand);
+const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
 
 // every published events should be saved into event-store
 publisher.onAny((event) => {
@@ -31,7 +34,7 @@ handlers(eventStore, publisher, Infrastructure.logger)
     Infrastructure.logger.info('[Command] handler created');
     // connect to message broker
     Promise.all([
-      eventBus.connect(publisher, eventStore, Infrastructure.logger, 'COMMAND'),
+      eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'COMMAND'),
       //        .then(channel => Promise.all([
       //          eventBus.propagateEvents(publisher, channel, Infrastructure.logger),
       //        ])),

@@ -6,6 +6,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORI
 
 const debug = require('debug')('microservice:query:server');
 
+const Domain = require('./src/modules/domain');
+
 // const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
 const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
@@ -23,8 +25,10 @@ publisher.onAny((event) => {
 debug('Initializing query server...');
 
 // connect to message broker
-eventBus.connect(publisher, eventStore, Infrastructure.logger, 'QUERY');
-readAPI.run(eventStore, Infrastructure.logger, (errQuery) => {
+const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
+eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'QUERY');
+
+readAPI.run(eventStore, repository, Infrastructure.logger, (errQuery) => {
   if (errQuery) { throw (errQuery); }
   Infrastructure.logger.info('[Query] HTTP API started');
 });

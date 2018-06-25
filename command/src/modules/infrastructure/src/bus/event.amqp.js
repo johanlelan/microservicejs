@@ -5,7 +5,7 @@ const debug = Debug('microservice:infrastructure:bus:commands:amqp');
 
 const queue = 'demandes-financement';
 
-exports.connect = (publisher, eventStore, logger, mode) => {
+exports.connect = (publisher, eventStore, repository, logger, mode) => {
   debug('Establishing AMQP connection...');
   return amqp.connect(process.env.AMQP_URL || 'amqp://localhost:5672')
     .then(connection => connection.createChannel().then((channel) => {

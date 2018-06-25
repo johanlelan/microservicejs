@@ -9,20 +9,26 @@ const HydrateProcessor = function HydrateProcessor() {
     return self;
   };
 
+  /**
+   * Pure (side-effect free) function to compute new state
+   * @param {*} initialState initial state
+   * @param {*} event new event
+   */
+  const applyEvent = (initialState, event) => {
+    const handler = handlers[event.type];
+    if (handler) {
+      handler.call(initialState, event);
+    }
+    return initialState;
+  };
+
   self.apply = function apply(events) {
     if (events instanceof Array) {
       events.forEach(self.apply);
       return self;
     }
-
     const event = events;
-
-    const handler = handlers[event.type];
-    if (handler) {
-      handler.call(self, event);
-    }
-
-    return self;
+    return applyEvent(self, event);
   };
 };
 

@@ -5,11 +5,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const pino = require('express-pino-logger')();
 
+const Domain = require('../../modules/domain');
+
 const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
-
-const Domain = require('../../modules/domain');
-const Infrastructure = require('../../modules/infrastructure');
 
 debug('Starting HTTP endpoints');
 
@@ -18,8 +17,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({}));
 app.use(pino);
 
-function runApp(eventStore, logger, callback) {
-  const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
+function runApp(eventStore, repository, logger, callback) {
   let port = 3001;
   if (process.env.API_PORT) {
     port = parseInt(process.env.API_PORT, 10);

@@ -12,17 +12,17 @@ exports.create = (IBus) => {
    * COMMAND only propagate events to BUS
    * @param {*} err : Eventual error for re-connection
    */
-  const connect = (publisher, eventStore, logger, mode, err) => {
+  const connect = (publisher, eventStore, repository, logger, mode, err) => {
     if (err && err.message !== 'Connection closing') {
       logger.error('[BUS] [Event] connection failed (waiting for reconnection)', err.message);
-      return connect(publisher, eventStore, logger, mode);
+      return connect(publisher, eventStore, repository, logger, mode);
     }
-    return IBus.connect(publisher, eventStore, logger, mode)
+    return IBus.connect(publisher, eventStore, repository, logger, mode)
       .then((connection) => {
         logger.info('[BUS] [Event] connection established');
         return connection;
       })
-      .catch(errConn => connect(publisher, eventStore, logger, mode, errConn));
+      .catch(errConn => connect(publisher, eventStore, repository, logger, mode, errConn));
   };
 
   return {

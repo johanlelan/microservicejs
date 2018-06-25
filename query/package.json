@@ -12,6 +12,7 @@
   "author": "lelan-j@mgdis.fr",
   "license": "ISC",
   "dependencies": {
+    "kafka-streams": "^4.4.0",
     "amqplib": "^0.5.2",
     "body-parser": "^1.18.2",
     "debug": "^3.1.0",

@@ -8,7 +8,6 @@ const EventsStore = function EventsStore(logger) {
   const events = [];
 
   this.append = function append(event) {
-    logger.info('Append event', event);
     if (!event.type) {
       throw new EventShouldBeNamed('Each event should be typed', event);
     }
@@ -25,12 +24,13 @@ const EventsStore = function EventsStore(logger) {
     if (!event.author) {
       throw new EventShouldContainsAuthor(eventType, event);
     }
-    logger.info(`event-store : save new event ${eventType} (${event.id})`);
+    logger.debug(`[event-store] Append new ${eventType} event`, event);
     events.push(event);
   };
 
   this.getEventsOfAggregate = function getEventsOfAggregate(aggregateId) {
-    return events.filter(event => aggregateId.equals(event.aggregateId));
+    const toString = JSON.stringify(aggregateId);
+    return events.filter(event => toString === JSON.stringify(event.aggregateId));
   };
 };
 
