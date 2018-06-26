@@ -17,10 +17,6 @@ const Repository = function Repository(Aggregate, eventsStore) {
 
     return state;
   };
-
-  this.getAggregate = function getAggregate() {
-    return Aggregate;
-  };
 };
 
 exports.create = function create(Aggregate, eventsStore) {
