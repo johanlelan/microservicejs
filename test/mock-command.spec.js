@@ -77,7 +77,7 @@ exports.channelStub = (publisher, eventStore, logger) => {
       return Promise.resolve();
     },
     sendToQueue: (queue, message, options) => {
-      //console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
+      // console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
       exports.propagateEvents.push(message);
       return Promise.resolve();
     },

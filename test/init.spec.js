@@ -1,10 +1,10 @@
 const amqp = require('amqplib');
 
 const logger = {
-  debug: () => (undefined), //console.debug,
-  info: () => (undefined), //console.info,
-  warn: () => (undefined), //console.warn,
-  error: () => (undefined), //console.error,
+  debug: () => (undefined), // console.debug,
+  info: () => (undefined), // console.info,
+  warn: () => (undefined), // console.warn,
+  error: () => (undefined), // console.error,
 }
 
 // override AMQP lib static functions
@@ -83,7 +83,7 @@ before((donePreparing) => {
       .then(commandHandler => {
         commandMessaging.connect(commandHandler, publisher, eventStore, logger)
         .then(() => {
-          //console.log('[HTTP] start express app');
+          // console.log('[HTTP] start express app');
           return readAPI.run(eventStore, repository, logger,
             (err) => {
               if (err) return donePreparing(err);

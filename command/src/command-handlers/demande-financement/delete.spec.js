@@ -2,6 +2,8 @@ const chai = require('chai');
 const Domain = require('../../modules/domain');
 const Infrastructure = require('../../modules/infrastructure');
 
+const deleteDemandeFinancement = require('./delete');
+
 const fakeLogger = {
   info: () => (undefined), // console.info,
   debug: () => (undefined), // console.debug,
@@ -65,7 +67,13 @@ describe('Commands', () => {
           new Domain.UserId('me@example.fr'),
           {},
         ));
-        DeleteDemandeFinancement = require('./delete')(Domain.DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
+        DeleteDemandeFinancement = deleteDemandeFinancement(
+          Domain.DemandeFinancement,
+          fakeRepository,
+          fakeEventStore,
+          fakePublisher,
+          fakeLogger,
+        );
       });
       it('When deleter is different from author Then deletion is deny', async () => {
         try {

@@ -5,6 +5,8 @@ const chai = require('chai');
 
 require('../../../../test/init.spec');
 
+const should = chai.should();
+
 const readerLogin = 'reader';
 const readerPwd = 'redaer';
 
@@ -77,23 +79,21 @@ describe('READ API', () => {
         'X-Request-Id': 'read-1',
       },
     };
-    // wait for event propagation
     return request(options, (err, resp, body) => {
-      chai.expect(err).to.be.null;
+      should.not.exist(err);
       chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
-      const location = resp.headers.location;
       const getDemandeFinancementOptions = {
         method: 'GET',
-        uri: `http://localhost:3001${location}`,
+        uri: `http://localhost:3001${resp.headers.location}`,
         headers: {
           'X-Request-Id': 'read-1.1',
         },
       };
-      return request(getDemandeFinancementOptions, (err, resp, body) => {
-        chai.expect(err).to.be.null;
-        chai.expect(resp).have.property('statusCode', 200);
-        done(err);
+      return request(getDemandeFinancementOptions, (errGET, respGET) => {
+        should.not.exist(errGET);
+        chai.expect(respGET).have.property('statusCode', 200);
+        done(errGET);
       }).auth(readerLogin, readerPwd);
     }).auth(username, password);
   });
@@ -114,31 +114,30 @@ describe('READ API', () => {
     };
     // wait for event propagation
     return request(options, (err, resp, body) => {
-      chai.expect(err).to.be.null;
+      should.not.exist(err);
       chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
-      const location = resp.headers.location;
       const deleteOptions = {
         method: 'DELETE',
-        uri: `http://localhost:3000${location}`,
+        uri: `http://localhost:3000${resp.headers.location}`,
         headers: {
           'X-Request-Id': 'read-1',
         },
       };
-      return request(deleteOptions, (err, resp, body) => {
-        chai.expect(err).to.be.null;
-        chai.expect(resp).have.property('statusCode', 204);
+      return request(deleteOptions, (errDELETE, respDELETE) => {
+        should.not.exist(errDELETE);
+        chai.expect(respDELETE).have.property('statusCode', 204);
         const getDemandeFinancementOptions = {
           method: 'GET',
-          uri: `http://localhost:3001${location}`,
+          uri: `http://localhost:3001${resp.headers.location}`,
           headers: {
             'X-Request-Id': 'read-1.1',
           },
         };
-        return request(getDemandeFinancementOptions, (err, resp, body) => {
-          chai.expect(err).to.be.null;
-          chai.expect(resp).have.property('statusCode', 410);
-          done(err);
+        return request(getDemandeFinancementOptions, (errGET, respGET) => {
+          should.not.exist(errGET);
+          chai.expect(respGET).have.property('statusCode', 410);
+          done(errGET);
         }).auth(readerLogin, readerPwd);
       }).auth(username, password);
     }).auth(username, password);
@@ -151,8 +150,8 @@ describe('READ API', () => {
         'X-Request-Id': 'read-2',
       },
     };
-    return request(getDemandeFinancementOptions, (err, resp, body) => {
-      chai.expect(err).to.be.null;
+    return request(getDemandeFinancementOptions, (err, resp) => {
+      should.not.exist(err);
       chai.expect(resp).have.property('statusCode', 404);
       done(err);
     }).auth(readerLogin, readerPwd);

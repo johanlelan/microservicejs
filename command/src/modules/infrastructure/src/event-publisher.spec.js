@@ -8,7 +8,7 @@ const EventB = function EventB() { };
 const EventC = function EventC() { };
 
 const fakeLogger = {
-  info: () => (undefined), //console.info,
+  info: () => (undefined), // console.info,
 };
 
 describe('EventPublisher', () => {

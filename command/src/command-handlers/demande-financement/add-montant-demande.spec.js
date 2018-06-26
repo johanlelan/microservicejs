@@ -3,6 +3,8 @@ const chai = require('chai');
 const Infrastructure = require('../../modules/infrastructure');
 const Domain = require('../../modules/domain');
 
+const addMontantDemande = require('./add-montant-demande');
+
 const fakeLogger = {
   info: () => (undefined), // console.info,
   debug: () => (undefined), // console.debug,
@@ -85,7 +87,13 @@ describe('Commands', () => {
           'me@example.fr',
           {},
         ));
-        AddMontantDemandeCommand = require('./add-montant-demande')(Domain.DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
+        AddMontantDemandeCommand = addMontantDemande(
+          Domain.DemandeFinancement,
+          fakeRepository,
+          fakeEventStore,
+          fakePublisher,
+          fakeLogger,
+        );
       });
       it('When permission is deny Then Fail', async () => {
         try {

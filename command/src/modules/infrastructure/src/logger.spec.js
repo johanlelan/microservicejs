@@ -1,5 +1,4 @@
 const logger = require('./logger');
-const chai = require('chai');
 
 describe('Logger', () => {
   it('Should trace debug log', () => {

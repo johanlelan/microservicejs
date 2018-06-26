@@ -6,14 +6,14 @@ const AggregateNotFound = require('./AggregateNotFound');
 
 // mocks
 const MockAggregate = {
-  createFromEvents: (events) => ({
+  createFromEvents: events => ({
     aggregateId: events[0].aggregateId,
   }),
   toString: () => 'mockAggregate',
 };
 const fakeLogger = {
-  info: () => (undefined), //console.info,
-  debug: () => (undefined), //console.debug,
+  info: () => (undefined), // console.info,
+  debug: () => (undefined), // console.debug,
 };
 class MockEvent {
   constructor(aggregateId) {
@@ -23,29 +23,25 @@ class MockEvent {
     this.timestamp = Date.now;
     this.author = {
       id: 'mock-user',
-    }
-  };
-};
+    };
+  }
+}
 class MockAggregateId {
   constructor(id) {
     this.id = id;
-  };
+  }
   equals(other) {
     return this.id === other.id;
-  };
-};
+  }
+}
 
 describe('Repository', () => {
   let repository;
   let eventsStore;
-  let publishEvent;
 
   beforeEach(() => {
     eventsStore = EventStore.create(fakeLogger);
     repository = Repository.create(MockAggregate, eventsStore);
-    publishEvent = (evt) => {
-      eventsStore.append(evt);
-    };
   });
 
   it('Given no events When GetById Then throw UnknownAggregate', () => {

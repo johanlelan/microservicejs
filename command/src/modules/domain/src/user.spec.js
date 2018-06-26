@@ -16,28 +16,23 @@ chai.use(assertArrays);
 describe('User Aggregate', () => {
   const author = 'author@example.fr';
   const userContent = { firstName: 'FirstName', lastName: 'LastName' };
-  let userId = new UserId(author);
-
-  beforeEach(() => {
-    eventsRaised = [];
-  });
 
   it('When create userId Then toString return id', () => {
-    userId = new UserId('M1');
+    const userId1 = new UserId('M1');
 
-    chai.expect(userId.toString()).to.equal(('userId:M1'));
+    chai.expect(userId1.toString()).to.equal(('userId:M1'));
   });
 
   it('When create userId Then equals should evaluate equality between two userId', () => {
-    userId1 = new UserId('M1');
-    userId2 = new UserId('M1');
+    const userId1 = new UserId('M1');
+    const userId2 = new UserId('M1');
 
     chai.assert.ok(userId1.equals(userId2));
   });
 
   it('When given null userId Then return false', () => {
-    userId1 = new UserId('M1');
-    userId2 = undefined;
+    const userId1 = new UserId('M1');
+    const userId2 = undefined;
 
     chai.assert.ok(!userId1.equals(userId2));
   });
@@ -76,13 +71,14 @@ describe('User Aggregate', () => {
   });
 
   it('When create userRegistered Then aggregateId is userId', () => {
-    const userId = new UserId('M2');
-    const event = new UserRegistered(userId, author, userContent);
+    const userId1 = new UserId('M2');
+    const event = new UserRegistered(userId1, author, userContent);
 
-    chai.expect(event.aggregateId).to.equal(userId);
+    chai.expect(event.aggregateId).to.equal(userId1);
   });
 
   it('When given several events Then rebuild User', () => {
+    const userId = new UserId(author);
     const user = User.createFromEvents([
       new UserRegistered(
         userId,
