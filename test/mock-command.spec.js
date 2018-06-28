@@ -18,9 +18,10 @@ function consumeEvents(messageHandler) {
       {
         status: 'SUPPORTED',
         montant: {
-          ttc: 10001.23
+          ttc: 10001.23,
         },
-      }))),
+      },
+    ))),
   };
   const mockAMQPAddMontantDemandeEvent = {
     properties: {
@@ -31,8 +32,9 @@ function consumeEvents(messageHandler) {
       new DemandeFinancementId('test-from-AMQP'),
       new Domain.UserId('amqp-user'),
       {
-        ttc: 23456.78
-      }))),
+        ttc: 23456.78,
+      },
+    ))),
   };
   const mockAMQPDeleteEvent = {
     properties: {
@@ -50,10 +52,9 @@ function consumeEvents(messageHandler) {
   } else if (eventNumber === 1) {
     eventNumber += 1;
     return messageHandler(mockAMQPAddMontantDemandeEvent);
-  } else {
-    return messageHandler(mockAMQPDeleteEvent);
   }
-};
+  return messageHandler(mockAMQPDeleteEvent);
+}
 
 function consumeCommands(messageHandler) {
   const mockAMQPCommand = {
@@ -66,33 +67,26 @@ function consumeCommands(messageHandler) {
     },
   };
   return messageHandler(mockAMQPCommand);
-};
+}
 
 exports.propagateEvents = [];
 
-exports.channelStub = (publisher, eventStore, logger) => {
-  const channel = {
-    isConnected: true,
-    assertQueue: () => {
-      return Promise.resolve();
-    },
-    sendToQueue: (queue, message, options) => {
-      // console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
-      exports.propagateEvents.push(message);
-      return Promise.resolve();
-    },
-    prefetch: () => {
-      return Promise.resolve();
-    },
-    consume: (queue, messageHandler) => {
-      if (queue.indexOf('.in') > -1) {
-        return consumeCommands(messageHandler);
-      } else {
-        return consumeEvents(messageHandler);
-      }
-    },
-  };
-};
+exports.channelStub = () => ({
+  isConnected: true,
+  assertQueue: () => Promise.resolve(),
+  sendToQueue: (queue, message) => {
+    // console.log(`[AMQP] receive new message ${JSON.stringify(JSON.parse(message))}`);
+    exports.propagateEvents.push(message);
+    return Promise.resolve();
+  },
+  prefetch: () => Promise.resolve(),
+  consume: (queue, messageHandler) => {
+    if (queue.indexOf('.in') > -1) {
+      return consumeCommands(messageHandler);
+    }
+    return consumeEvents(messageHandler);
+  },
+});
 
 exports.connect = (handler, publisher, eventStore, logger) => {
   publisher.onAny((event) => {

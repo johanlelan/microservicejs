@@ -1,11 +1,9 @@
-const amqp = require('amqplib');
-
 const logger = {
   debug: () => (undefined), // console.debug,
   info: () => (undefined), // console.info,
   warn: () => (undefined), // console.warn,
   error: () => (undefined), // console.error,
-}
+};
 
 // override AMQP lib static functions
 const mockBusEvent = require('./mock-event.spec');
@@ -72,46 +70,58 @@ mockBusEvent.stub.callsFake(() => {
 });
 */
 before((donePreparing) => {
-  if (init) return donePreparing();
+  if (init) {
+    donePreparing();
+  } else {
   // wait until app is started
   // first connection will fail
-  commandMessaging.connect(undefined, publisher, eventStore, logger).then((bus) => {
-    chai.assert.fail('Should fail on first connection');
-  }).catch(() => {
-    chai.assert.isOk(true);
-    return handlers(repository, publisher, logger)
-      .then(commandHandler => {
-        commandMessaging.connect(commandHandler, publisher, eventStore, logger)
-        .then(() => {
+    commandMessaging.connect(undefined, publisher, eventStore, logger)
+      .then(() => {
+        chai.assert.fail('Should fail on first connection');
+      })
+      .catch(() => {
+        chai.assert.isOk(true);
+        handlers(repository, publisher, logger)
+          .then(commandHandler => commandMessaging.connect(
+            commandHandler,
+            publisher,
+            eventStore,
+            logger,
+          ).then(() =>
           // console.log('[HTTP] start express app');
-          return readAPI.run(eventStore, repository, logger,
-            (err) => {
-              if (err) return donePreparing(err);
-              return writeAPI.run(commandHandler, logger,
-              () => {
-                init = true;
-                return donePreparing();
-              });
-            });
-        });
-      });
-    })
-  .catch(donePreparing);
-  });
+            readAPI.run(
+              eventStore, repository, logger,
+              (err) => {
+                if (err) {
+                  donePreparing(err);
+                } else {
+                  writeAPI.run(
+                    commandHandler, logger,
+                    () => {
+                      init = true;
+                      return donePreparing();
+                    },
+                  );
+                }
+              },
+            )));
+      })
+      .catch(donePreparing);
+  }
+});
 
 after((doneCleaning) => {
   if (ending) return doneCleaning();
   process.env.API_PORT = 3002;
-  writeAPI.run(undefined, logger, err => {
-    if (err) return doneCleaning(err);
+  return writeAPI.run(undefined, logger, (errWRITE) => {
+    if (errWRITE) return doneCleaning(errWRITE);
     process.env.API_PORT = 3003;
-    eventMessaging.connect(publisher, eventStore, repository, logger).then(bus => bus.createChannel())
-    .then(channel => {
-      return readAPI.run(eventStore, repository, logger, err => {
+    return eventMessaging.connect(publisher, eventStore, repository, logger)
+      .then(bus => bus.createChannel())
+      .then(() => readAPI.run(eventStore, repository, logger, (errREAD) => {
         ending = true;
-        return doneCleaning(err)
-      });
-    })
-    .catch(doneCleaning);
+        return doneCleaning(errREAD);
+      }))
+      .catch(doneCleaning);
   });
 });

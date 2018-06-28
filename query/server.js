@@ -9,7 +9,7 @@ const debug = require('debug')('microservice:query:server');
 const Domain = require('./src/modules/domain');
 
 // const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
-const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
+const concreteEvent = require('./src/plugins/event.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
 const readAPI = require('./src/interfaces/http//app');
 

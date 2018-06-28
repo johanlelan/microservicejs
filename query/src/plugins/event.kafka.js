@@ -47,14 +47,7 @@ const KafkaService = {
         stream.start().then(() => {
           publisher.onAny((event) => {
             logger.info(`Propagate event ${event.type}`);
-            stream.writeToStream({
-              topic: `${topic}.events.out`,
-              key: event.aggregateId,
-              messages: [Buffer.from(JSON.stringify(event))],
-              attributes: 1, /* Use GZip compression for the payload */
-              // TODO JLL: see if content-type should be sent
-              // contentType: 'application/json'
-            });
+            stream.writeToStream(JSON.stringify(event));
           });
         });
       } else {
@@ -85,16 +78,13 @@ const KafkaService = {
         stream
           .from(`${topic}.events.out`)
           .mapJSONConvenience() // {key: Buffer, value: Buffer} -> {key: string, value: Object}
+          // save incoming event into events store
+          .tap(message => eventStore.append(message.value))
           .forEach((message) => {
-            let state = message;
-            if (typeof message.value === 'object') {
-              const event = message.value;
-              // save incoming event into events store
-              eventStore.append(message.value);
-              // Hydrate aggregate by its events to compute current state
-              state = repository.getById(event.aggregateId);
-              logger.info('[Stream] Compute current state of Aggregate', state);
-            }
+            const event = message.value;
+            // Hydrate aggregate by its events to compute current state
+            const state = repository.getById(event.aggregateId);
+            logger.info('[Stream] Compute current state of Aggregate', state);
             return state;
           });
         stream.start();

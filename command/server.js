@@ -10,8 +10,8 @@ const Domain = require('./src/modules/domain');
 
 // const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
 // const concreteCommand = require('./src/modules/infrastructure/src/bus/command.amqp');
-const concreteEvent = require('./src/modules/infrastructure/src/bus/event.kafka');
-const concreteCommand = require('./src/modules/infrastructure/src/bus/command.kafka');
+const concreteEvent = require('./src/plugins/event.kafka');
+const concreteCommand = require('./src/plugins/command.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
 const handlers = require('./src/command-handlers/index.js');
 const writeAPI = require('./src/interfaces/http/app');
