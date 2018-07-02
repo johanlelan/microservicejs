@@ -11,7 +11,7 @@ const Domain = require('./src/modules/domain');
 // const concreteEvent = require('./src/modules/infrastructure/src/bus/event.amqp');
 const concreteEvent = require('./src/plugins/event.kafka');
 const Infrastructure = require('./src/modules/infrastructure');
-const readAPI = require('./src/interfaces/http//app');
+const readAPI = require('./src/interfaces/http/app');
 
 const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
@@ -24,11 +24,16 @@ publisher.onAny((event) => {
 
 debug('Initializing query server...');
 
-// connect to message broker
-const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
-eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'QUERY');
+// Mongodb states repository
+require('./src/plugins/repository.state.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017')
+  .then((stateRepositoryImpl) => {
+    const repository = stateRepositoryImpl.create(Domain.DemandeFinancement);
 
-readAPI.run(eventStore, repository, Infrastructure.logger, (errQuery) => {
-  if (errQuery) { throw (errQuery); }
-  Infrastructure.logger.info('[Query] HTTP API started');
-});
+    // connect to message broker
+    eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'QUERY');
+
+    readAPI.run(eventStore, repository, Infrastructure.logger, (errQuery) => {
+      if (errQuery) { throw (errQuery); }
+      Infrastructure.logger.info('[Query] HTTP API started');
+    });
+  });

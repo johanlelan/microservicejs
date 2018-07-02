@@ -42,6 +42,10 @@ const consumeIncomingCommands = (commandHandler, channel, logger) => Promise.all
 exports.connect = (handler, publisher, eventStore, logger) => {
   debug('Establishing AMQP connection...');
   return amqp.connect(process.env.AMQP_URL || 'amqp://localhost:5672')
+    .then((connection) => {
+      debug('Connection established');
+      return connection;
+    })
     .then(connection => connection.createChannel().then((channel) => {
       const currentChannel = channel;
       currentChannel.isConnected = true;

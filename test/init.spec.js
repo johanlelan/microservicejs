@@ -112,10 +112,10 @@ before((donePreparing) => {
 
 after((doneCleaning) => {
   if (ending) return doneCleaning();
-  process.env.API_PORT = 3002;
+  process.env.API_PORT = 3003;
   return writeAPI.run(undefined, logger, (errWRITE) => {
     if (errWRITE) return doneCleaning(errWRITE);
-    process.env.API_PORT = 3003;
+    process.env.API_PORT = 3004;
     return eventMessaging.connect(publisher, eventStore, repository, logger)
       .then(bus => bus.createChannel())
       .then(() => readAPI.run(eventStore, repository, logger, (errREAD) => {

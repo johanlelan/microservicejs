@@ -51,7 +51,7 @@ module.exports = (DemandeFinancement, repository, publisher, logger) =>
     // authorize user
     DemandeFinancement.canAddMontantDemande(command.user, current, command.data);
     logger.info(`Incoming user "${command.user.id}" is allowed to execute ${command.name} with ${JSON.stringify(command.data)}`);
-    const events = current.ajouterMontantDemande(command.id, command.user, current, command.data);
+    const events = current.ajouterMontantDemande(command.user, command.data);
     events.forEach(event => publisher.publish(event));
     return events;
   };

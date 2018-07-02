@@ -33,14 +33,19 @@ function runApp(eventStore, repository, logger, callback) {
   app.get(
     '/demandes-financement/:identifier',
     ensureLoggedIn,
-    (req, res) => {
+    async (req, res, next) => {
+      try {
       // 404 Not Found should be send if aggregate is not found
-      const aggregate = repository.getById(new Domain.DemandeFinancementId(req.params.identifier));
-      if (!aggregate._active) {
+        const state =
+        await repository.getById(new Domain.DemandeFinancementId(req.params.identifier));
+        if (!state._active) {
         // deleted === 410 Gone
-        return res.status(410).json(aggregate);
+          return res.status(410).json(state);
+        }
+        return res.status(200).json(state);
+      } catch (err) {
+        return next(err);
       }
-      return res.status(200).json(aggregate);
     },
   );
 

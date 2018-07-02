@@ -6,13 +6,35 @@ const topic = 'demandes-financement';
 
 const KafkaService = {
   connect: (publisher, eventStore, repository, logger, mode) => {
-    debug('Establishing Kafka connection...');
     const zkOptions = {
       sessionTimeout: 300,
       spinDelay: 100,
       retries: 2,
     };
+    const config = {
+      zkConStr: process.env.KAFKA_URL || 'localhost:2181/',
+      groupId: 'event-stream',
+      workerPerPartition: 1,
+      options: {
+        sessionTimeout: 8000,
+        protocol: ['roundrobin'],
+        fromOffset: 'earliest', // latest
+        fetchMaxBytes: 1024 * 100,
+        fetchMinBytes: 1,
+        fetchMaxWaitMs: 10,
+        heartbeatInterval: 250,
+        retryMinTimeout: 250,
+        autoCommit: true,
+        autoCommitIntervalMs: 1000,
+        requireAcks: 0,
+        // ackTimeoutMs: 100,
+        // partitionerType: 3
+      },
+    };
     const client = new kafka.Client(process.env.KAFKA_URL || 'localhost:2181', 'microserviceEventBus', zkOptions);
+    client.once('connect', () => {
+      debug('Connection established');
+    });
     client.createTopics([
       `${topic}.events.out`,
     ], false, (errTopics) => {
@@ -20,27 +42,7 @@ const KafkaService = {
         logger.error('When creating topics', errTopics);
       }
       if (mode === 'COMMAND') {
-        const config = {
-          zkConStr: process.env.KAFKA_URL || 'localhost:2181/',
-          groupId: 'event-stream',
-          clientName: 'publisher-event-stream',
-          workerPerPartition: 1,
-          options: {
-            sessionTimeout: 8000,
-            protocol: ['roundrobin'],
-            fromOffset: 'earliest', // latest
-            fetchMaxBytes: 1024 * 100,
-            fetchMinBytes: 1,
-            fetchMaxWaitMs: 10,
-            heartbeatInterval: 250,
-            retryMinTimeout: 250,
-            autoCommit: true,
-            autoCommitIntervalMs: 1000,
-            requireAcks: 0,
-            // ackTimeoutMs: 100,
-            // partitionerType: 3
-          },
-        };
+        config.clientName = 'publisher-event-stream';
         const kafkaStreams = new KafkaStreams(config);
         const stream = kafkaStreams.getKStream();
         stream.to(`${topic}.events.out`);
@@ -51,40 +53,30 @@ const KafkaService = {
           });
         });
       } else {
-        const config = {
-          zkConStr: process.env.KAFKA_URL || 'localhost:2181/',
-          groupId: 'event-stream',
-          clientName: 'query-event-stream',
-          workerPerPartition: 1,
-          options: {
-            sessionTimeout: 8000,
-            protocol: ['roundrobin'],
-            fromOffset: 'earliest', // latest
-            fetchMaxBytes: 1024 * 100,
-            fetchMinBytes: 1,
-            fetchMaxWaitMs: 10,
-            heartbeatInterval: 250,
-            retryMinTimeout: 250,
-            autoCommit: true,
-            autoCommitIntervalMs: 1000,
-            requireAcks: 0,
-            // ackTimeoutMs: 100,
-            // partitionerType: 3
-          },
-        };
+        config.clientName = 'query-event-stream';
         const kafkaStreams = new KafkaStreams(config);
         const stream = kafkaStreams.getKStream();
 
         stream
           .from(`${topic}.events.out`)
           .mapJSONConvenience() // {key: Buffer, value: Buffer} -> {key: string, value: Object}
-          // save incoming event into events store
-          .tap(message => eventStore.append(message.value))
-          .forEach((message) => {
+          .forEach(async (message) => {
             const event = message.value;
-            // Hydrate aggregate by its events to compute current state
-            const state = repository.getById(event.aggregateId);
-            logger.info('[Stream] Compute current state of Aggregate', state);
+            const type = event.type || '';
+            let state;
+            if (type.indexOf('Created') === -1) {
+              // get current state
+              state = await repository.getById(event.aggregateId);
+              // apply new event
+              state.apply(event);
+              logger.info(`[Kafka] Apply event on current DB state of Aggregate ${event.aggregateId}`);
+            } else {
+              // create new state
+              state = repository.getAggregate().createFromEvents([event]);
+            }
+            // save newly state to DB
+            repository.save(state);
+
             return state;
           });
         stream.start();

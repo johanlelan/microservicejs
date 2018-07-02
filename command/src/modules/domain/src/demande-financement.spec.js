@@ -135,9 +135,7 @@ describe('Demande-financement Aggregate', () => {
       ),
     ]);
     const eventsRaised = userDemandeFinancement.ajouterMontantDemande(
-      userDemandeFinancement.id,
       { id: 'updator' },
-      userDemandeFinancement,
       { ttc: 123.56 },
     );
     chai.expect(eventsRaised).to.be.ofSize(1);
@@ -145,6 +143,53 @@ describe('Demande-financement Aggregate', () => {
     new MontantDemandeAdded(demandeFinancementId, author, 123.56);
     chai.expect(eventsRaised).to.be.ofSize(1);
     chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+  });
+
+  describe('Wrap JSON state', () => {
+    it('Given a JSON State When "Wrap" then a DemandeFinancement instance is returned', () => {
+      const jsonState = {
+        aggregateId: {
+          id: '37846d7a-d3cf-435d-a0df-0fe0e2f44cfb',
+        },
+        author: {
+          id: 'admin',
+          title: 'Admin',
+        },
+        _active: true,
+        status: 'REQUESTED',
+        montant: {
+          ttc: 1234.56,
+        },
+        _updated: 1530557774781.0,
+      };
+      const demandeFinancement = DemandeFinancement.wrap(jsonState);
+      // delete is an internal function of DemandeFinancement Domain Aggregate
+      chai.expect(demandeFinancement).to.have.property('delete');
+      chai.expect(demandeFinancement).to.have.property('status', jsonState.status);
+    });
+  });
+
+  describe('Apply only new Event on initial State', () => {
+    it('Given an event When "Applying" on current state then return newly state', () => {
+      const demandeFinancement = DemandeFinancement.createFromEvents([
+        new DemandeFinancementCreated(
+          demandeFinancementId,
+          author,
+          demandeFinancementContent,
+        ),
+      ]);
+      demandeFinancement.apply(new MontantDemandeAdded(demandeFinancementId, author, 123.56));
+      // newly State should have "montant" property
+      chai.expect(demandeFinancement).to.have.property('montant', 123.56);
+    });
+  });
+
+  describe('Name function for each Aggregate', () => {
+    it('All Domain Aggregate should expose its name', () => {
+      chai.expect(DemandeFinancement).to.have.property('getName');
+      (typeof (DemandeFinancement.getName)).should.equals('function');
+      chai.expect(DemandeFinancement.getName()).to.have.equal('demande-financement');
+    });
   });
 
   describe('Permission functions', () => {

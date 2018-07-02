@@ -32,6 +32,13 @@ exports.canCreateDemandeFinancement = (user, content) => {
   }
 };
 
+exports.canDeleteDemandeFinancement = (deleter, content) => {
+  // Only creator can delete its demande-financement
+  if (content.author.id !== deleter.id) {
+    throw new ErrorPermissions('Only creator can delete its demandeFinancement');
+  }
+};
+
 exports.canAddMontantDemande = (user, current, montantDemande) => {
   // Do not allow negative montantDemande
   if (montantDemande.ttc < 0) {
@@ -39,39 +46,35 @@ exports.canAddMontantDemande = (user, current, montantDemande) => {
   }
 };
 
-exports.canDeleteDemandeFinancement = (user, current) => {
-  // Only creator can delete its demandeFinancement
-  // TODO JLL: use lodash get
-  if (current.author.id !== user.id) {
-    throw new ErrorPermissions('Only creator can delete its demandeFinancement');
-  }
-};
-
-const DemandeFinancement = function DemandeFinancement(events) {
+const DemandeFinancement = function DemandeFinancement(events, initState) {
+  const hydrateProcessor = infrastructure.HydrateProcessor.create();
   const self = this;
+  if (initState) {
+    Object.keys(initState).forEach((key) => {
+      // should not manage properties
+      // aggregateId, author
+      self[key] = initState[key];
+    });
+  }
 
-  infrastructure.HydrateProcessor.create()
-    .register(DemandeFinancementCreated, (event) => {
-      self.aggregateId = event.aggregateId;
-      self.author = event.author;
-      self._active = true;
-      Object.keys(event.content).forEach((key) => {
-        // should not manage properties
-        // aggregateId, author
-        self[key] = event.content[key];
-      });
-    })
-    .register(MontantDemandeAdded, (event) => {
-      self.author = event.author;
-      self.montant = event.montant;
-      self._updated = event.timestamp;
-    })
-    .register(DemandeFinancementDeleted, (event) => {
-      self.author = event.author;
-      self._active = false;
-      self._deleted = event.timestamp;
-    })
-    .apply(events);
+  hydrateProcessor.register(DemandeFinancementCreated, (event) => {
+    self.aggregateId = event.aggregateId;
+    self.author = event.author;
+    self._active = true;
+    Object.keys(event.content).forEach((key) => {
+      // should not manage properties
+      // aggregateId, author
+      self[key] = event.content[key];
+    });
+  }).register(MontantDemandeAdded, (event) => {
+    self.author = event.author;
+    self.montant = event.montant;
+    self._updated = event.timestamp;
+  }).register(DemandeFinancementDeleted, (event) => {
+    self.author = event.author;
+    self._active = false;
+    self._deleted = event.timestamp;
+  }).apply(events);
 
   self.delete = function remove(deleter) {
     // if aggregate is active then delete it
@@ -83,13 +86,25 @@ const DemandeFinancement = function DemandeFinancement(events) {
     return [];
   };
 
-  self.ajouterMontantDemande = function ajouterMontantDemande(id, author, current, montant) {
+  self.ajouterMontantDemande = function ajouterMontantDemande(author, montant) {
     return [
       new MontantDemandeAdded(self.aggregateId, author, montant),
     ];
+  };
+
+  self.apply = function apply(event) {
+    hydrateProcessor.apply(event);
   };
 };
 
 exports.createFromEvents = function createFromEvents(events) {
   return new DemandeFinancement(events);
+};
+
+exports.wrap = function wrap(state) {
+  return new DemandeFinancement([], state);
+};
+
+exports.getName = function getName() {
+  return 'demande-financement';
 };

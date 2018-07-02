@@ -1,7 +1,6 @@
 const debug = require('debug')('microservice:infrastructure:bus:commands');
 
 exports.create = (IBus) => {
-  debug('Creating commands Bus...');
   const connect = (handler, publisher, eventStore, logger, err) => {
     if (err && err.message !== 'Connection closing') {
       logger.error('[Bus] [Command] connection failed (waiting for reconnection)', err.message);
@@ -9,6 +8,7 @@ exports.create = (IBus) => {
     }
     return IBus.connect(handler, publisher, eventStore, logger)
       .then((connection) => {
+        debug('Command Bus created');
         logger.info('[Bus] [Command] connection established');
         return connection;
       })

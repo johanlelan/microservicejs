@@ -5,14 +5,15 @@ const topic = 'demandes-financement';
 
 const KafkaService = {
   connect: (handler, publisher, eventStore, logger) => {
-    debug('Establishing Kafka connection...');
     const zkOptions = {
       sessionTimeout: 300,
       spinDelay: 100,
       retries: 2,
     };
     const client = new kafka.Client(process.env.KAFKA_URL || 'localhost:2181', 'microserviceCommandBus', zkOptions);
-
+    client.once('connect', () => {
+      debug('Connection established');
+    });
     client.createTopics([
       `${topic}.commands.in`,
     ], false, (errTopics) => {

@@ -1,7 +1,6 @@
 const debug = require('debug')('microservice:infrastructure:bus:events');
 
 exports.create = (IBus) => {
-  debug('Creating events Bus...');
   /**
    * Connection to event BUS
    * @param {*} publisher : Event publisher used to propagate event into queue/topic
@@ -19,6 +18,7 @@ exports.create = (IBus) => {
     }
     return IBus.connect(publisher, eventStore, repository, logger, mode)
       .then((connection) => {
+        debug('Event Bus created');
         logger.info('[BUS] [Event] connection established');
         return connection;
       })
