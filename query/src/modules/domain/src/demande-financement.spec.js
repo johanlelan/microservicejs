@@ -145,7 +145,7 @@ describe('Demande-financement Aggregate', () => {
     chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
   });
 
-  describe('Wrap JSON state', () => {
+  describe('State', () => {
     it('Given a JSON State When "Wrap" then a DemandeFinancement instance is returned', () => {
       const jsonState = {
         aggregateId: {
@@ -167,9 +167,6 @@ describe('Demande-financement Aggregate', () => {
       chai.expect(demandeFinancement).to.have.property('delete');
       chai.expect(demandeFinancement).to.have.property('status', jsonState.status);
     });
-  });
-
-  describe('Apply only new Event on initial State', () => {
     it('Given an event When "Applying" on current state then return newly state', () => {
       const demandeFinancement = DemandeFinancement.createFromEvents([
         new DemandeFinancementCreated(
@@ -181,14 +178,6 @@ describe('Demande-financement Aggregate', () => {
       demandeFinancement.apply(new MontantDemandeAdded(demandeFinancementId, author, 123.56));
       // newly State should have "montant" property
       chai.expect(demandeFinancement).to.have.property('montant', 123.56);
-    });
-  });
-
-  describe('Name function for each Aggregate', () => {
-    it('All Domain Aggregate should expose its name', () => {
-      chai.expect(DemandeFinancement).to.have.property('getName');
-      (typeof (DemandeFinancement.getName)).should.equals('function');
-      chai.expect(DemandeFinancement.getName()).to.have.equal('demande-financement');
     });
   });
 

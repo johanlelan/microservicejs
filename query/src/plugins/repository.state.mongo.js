@@ -27,16 +27,22 @@ const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate
   };
 };
 
-module.exports = mongoURL => MongoDB.MongoClient.connect(mongoURL, { useNewUrlParser: true })
-  .then((connection) => {
-    debug('Connection established', mongoURL);
-    return connection;
-  })
+module.exports = mongoURL => MongoDB.MongoClient.connect(mongoURL, {
+  autoReconnect: true,
+  bufferMaxEntries: 0,
+  reconnectTries: 3600,
+  keepAlive: 10000,
+  promiseLibrary: Promise,
+  useNewUrlParser: true,
+}).then((connection) => {
+  debug('Connection established', mongoURL);
+  return connection;
+})
   .then(connection => ({
-    create: function create(Aggregate) {
+    create: function create(Aggregate, collectionName) {
       const stateDB = connection.db('states');
-      const collection = stateDB.collection(`${Aggregate.getName()}`);
-      // TODP JLL: ensure index for state collection
+      const collection = stateDB.collection(collectionName);
+      // TODO JLL: ensure index for state collection
       return new StateRepositoryMongo(collection, Aggregate);
     },
   }));

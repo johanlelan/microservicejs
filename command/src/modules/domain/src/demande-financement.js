@@ -104,7 +104,3 @@ exports.createFromEvents = function createFromEvents(events) {
 exports.wrap = function wrap(state) {
   return new DemandeFinancement([], state);
 };
-
-exports.getName = function getName() {
-  return 'demande-financement';
-};

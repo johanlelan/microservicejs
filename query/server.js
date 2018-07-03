@@ -27,7 +27,7 @@ debug('Initializing query server...');
 // Mongodb states repository
 require('./src/plugins/repository.state.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017')
   .then((stateRepositoryImpl) => {
-    const repository = stateRepositoryImpl.create(Domain.DemandeFinancement);
+    const repository = stateRepositoryImpl.create(Domain.DemandeFinancement, 'demande-financement');
 
     // connect to message broker
     eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'QUERY');
