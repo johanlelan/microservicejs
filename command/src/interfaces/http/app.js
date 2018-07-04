@@ -83,14 +83,20 @@ function runApp(commandHandler, logger, callback) {
 
   /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "next" }] */
   // HTTP 500 is for non managed exceptions
-  app.use((err, req, res, next) => res.status(err.statusCode ||
+  app.use((err, req, res, next) => {
+    const error = err;
+    if (error.statusCode === 404 && req.method === 'DELETE') {
+      error.statusCode = 204;
+    }
+    res.status(error.statusCode ||
     /* istanbul ignore next: for unmanaged errors */
     500).json({
-    detail: {
-      message: err.message,
-      stack: err.stack,
-    },
-  }));
+      detail: {
+        message: error.message,
+        stack: error.stack,
+      },
+    });
+  });
 
   return app.listen(port, () => {
     logger.info(`Listening on port http://localhost:${port}!`);

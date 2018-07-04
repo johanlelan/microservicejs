@@ -44,22 +44,21 @@ describe('Repository', () => {
     repository = Repository.create(MockAggregate, eventsStore);
   });
 
-  it('Given no events When GetById Then throw UnknownAggregate', () => {
-    chai.expect(() => {
-      repository.getById(new MockAggregateId('BadId'));
-    }).to.throw(AggregateNotFound);
-  });
+  it('Given no events When GetById Then throw UnknownAggregate', () => repository.getById(new MockAggregateId('BadId'))
+    .catch(error => chai.expect(error).to.be.instanceOf(AggregateNotFound)));
 
   it('Given several events When GetById Then Return Aggregate', () => {
     const defId = new MockAggregateId('def1');
     const eventCreated = new MockEvent(defId);
     const eventUpdated = new MockEvent(defId);
-    eventsStore.append(eventCreated);
-    eventsStore.append(eventUpdated);
-
-    const aggregateFromRepository = repository.getById(defId);
-    chai.expect(aggregateFromRepository)
-      .to
-      .have.property('aggregateId', defId);
+    return Promise.all([
+      eventsStore.append(eventCreated),
+      eventsStore.append(eventUpdated),
+    ]).then(() => repository.getById(defId)
+      .then((aggregateFromRepository) => {
+        chai.expect(aggregateFromRepository)
+          .to
+          .have.property('aggregateId', defId);
+      }));
   });
 });

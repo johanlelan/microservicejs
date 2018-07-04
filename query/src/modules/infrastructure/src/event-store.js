@@ -7,30 +7,39 @@ const EventShouldContainsAuthor = require('./EventShouldContainsAuthor');
 const EventsStore = function EventsStore(logger) {
   const events = [];
 
-  this.append = function append(event) {
+  function validate(event) {
     if (!event.type) {
-      throw new EventShouldBeNamed('Each event should be typed', event);
+      return Promise.reject(new EventShouldBeNamed('Event should be typed', event));
     }
     const eventType = event.type;
     if (!event.id) {
-      throw new EventShouldContainsId(eventType, event);
+      return Promise.reject(new EventShouldContainsId(eventType, event));
     }
     if (!event.aggregateId) {
-      throw new EventShouldContainsAggregateId(eventType, event);
+      return Promise.reject(new EventShouldContainsAggregateId(eventType, event));
     }
     if (!event.timestamp) {
-      throw new EventShouldContainsTimestamp(eventType, event);
+      return Promise.reject(new EventShouldContainsTimestamp(eventType, event));
     }
     if (!event.author) {
-      throw new EventShouldContainsAuthor(eventType, event);
+      return Promise.reject(new EventShouldContainsAuthor(eventType, event));
     }
-    logger.debug(`[event-store] Append new ${eventType} event`, event);
-    events.push(event);
+    return Promise.resolve(event);
+  }
+
+  this.append = function append(event) {
+    return validate(event)
+      .then((validatedEvent) => {
+        const eventType = validatedEvent.type;
+        logger.debug(`[event-store] Append new ${eventType} event`, validatedEvent);
+        events.push(validatedEvent);
+        return Promise.resolve(validatedEvent);
+      });
   };
 
   this.getEventsOfAggregate = function getEventsOfAggregate(aggregateId) {
     const toString = JSON.stringify(aggregateId);
-    return events.filter(event => toString === JSON.stringify(event.aggregateId));
+    return Promise.resolve(events.filter(event => toString === JSON.stringify(event.aggregateId)));
   };
 };
 

@@ -11,14 +11,7 @@ const fakeLogger = {
 };
 const fakeEventStore = Infrastructure.EventStore.create(fakeLogger);
 const fakePublisher = Infrastructure.EventPublisher.create(fakeLogger);
-const fakeRepository = {
-  getById: function getById() {
-    return {};
-  },
-  getAllEvents: function getAllEvents() {
-    return [];
-  },
-};
+const fakeRepository = Infrastructure.Repository.create(Domain.DemandeFinancement, fakeEventStore);
 
 let AddMontantDemandeCommand = require('./add-montant-demande')(Domain.DemandeFinancement, fakeRepository, fakePublisher, fakeLogger);
 

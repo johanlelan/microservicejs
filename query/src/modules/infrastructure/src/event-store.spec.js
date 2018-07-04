@@ -54,26 +54,23 @@ describe('Events Store', () => {
 
   describe('Event validation', () => {
     it('When store event without name Then throw exception', () => {
-      chai.expect(() => {
-        eventsStore.append(new BadEvent());
-      }).to.throw(EventShouldBeNamed);
+      eventsStore.append(new BadEvent())
+        .catch(error => chai.expect(error).to.be.instanceOf(EventShouldBeNamed));
     });
     it('When store event without id Then throw exception', () => {
       function EventWithoutId() {
         this.type = 'EventWithoutId';
       }
-      chai.expect(() => {
-        eventsStore.append(new EventWithoutId());
-      }).to.throw(EventShouldContainsId);
+      eventsStore.append(new EventWithoutId())
+        .catch(error => chai.expect(error).to.be.instanceOf(EventShouldContainsId));
     });
     it('When store event without aggregateId Then throw exception', () => {
       function EventWithoutAggregateId() {
         this.type = 'EventWithoutAggregateId';
         this.id = uuid.v4();
       }
-      chai.expect(() => {
-        eventsStore.append(new EventWithoutAggregateId());
-      }).to.throw(EventShouldContainsAggregateId);
+      eventsStore.append(new EventWithoutAggregateId())
+        .catch(error => chai.expect(error).to.be.instanceOf(EventShouldContainsAggregateId));
     });
     it('When store event of aggregate without timestamp Then throw exception', () => {
       function EventWithoutTimestamp(aggregateId) {
@@ -82,9 +79,8 @@ describe('Events Store', () => {
         this.aggregateId = aggregateId;
       }
       const aggregateId = new AggregateId('AggregateA');
-      chai.expect(() => {
-        eventsStore.append(new EventWithoutTimestamp(aggregateId));
-      }).to.throw(EventShouldContainsTimestamp);
+      eventsStore.append(new EventWithoutTimestamp(aggregateId))
+        .catch(error => chai.expect(error).to.be.instanceOf(EventShouldContainsTimestamp));
     });
 
     it('When store event of aggregate without author Then throw exception', () => {
@@ -95,57 +91,59 @@ describe('Events Store', () => {
         this.timestamp = Date.now();
       }
       const aggregateId = new AggregateId('AggregateA');
-      chai.expect(() => {
-        eventsStore.append(new EventWithoutAuthor(aggregateId));
-      }).to.throw(EventShouldContainsAuthor);
+      eventsStore.append(new EventWithoutAuthor(aggregateId))
+        .catch(error => chai.expect(error).to.be.instanceOf(EventShouldContainsAuthor));
     });
   });
 
   it('When store event of aggregate Then can get this event of aggregate', () => {
     const aggregateId = new AggregateId('AggregateA');
-    eventsStore.append(new TestEvent(aggregateId));
-
-    const result = eventsStore.getEventsOfAggregate(aggregateId);
-
-    chai.expect(result).have.length(1);
-    chai.expect(result[0].aggregateId).to.deep.equal(aggregateId);
+    return eventsStore.append(new TestEvent(aggregateId))
+      .then(() => eventsStore.getEventsOfAggregate(aggregateId)
+        .then((result) => {
+          chai.expect(result).have.length(1);
+          chai.expect(result[0].aggregateId).to.deep.equal(aggregateId);
+        }));
   });
 
   it('When get this event of aggregate Then use equals and not operator', () => {
     const id = 'AggregateA';
-    eventsStore.append(new TestEvent(new AggregateId(id)));
-
-    const result = eventsStore.getEventsOfAggregate(new AggregateId(id));
-
-    chai.expect(result).to.be.ofSize(1);
-    chai.expect(result[0].aggregateId).to.deep.equal(new AggregateId(id));
+    return eventsStore.append(new TestEvent(new AggregateId(id)))
+      .then(() => eventsStore.getEventsOfAggregate(new AggregateId(id))
+        .then((result) => {
+          chai.expect(result).to.be.ofSize(1);
+          chai.expect(result[0].aggregateId).to.deep.equal(new AggregateId(id));
+        }));
   });
 
   it('Given events of several aggregates When getEventsOfAggregate Then return events of only this aggregate', () => {
     const aggregateId1 = new AggregateId('AggregateA');
     const aggregateId2 = new AggregateId('AggregateB');
-    eventsStore.append(new TestEvent(aggregateId1));
-    eventsStore.append(new TestEvent(aggregateId2));
-    eventsStore.append(new TestEvent(aggregateId1));
-
-    const result = eventsStore.getEventsOfAggregate(aggregateId1);
-    // expect right number of events
-    chai.expect(result).to.have.length(2);
-    // expect right order of Ids
-    const aggregateIds = map(result, 'aggregateId');
-    chai.expect(aggregateIds).to.deep.include(aggregateId1);
-    chai.expect(aggregateIds).and.not.include(aggregateId2);
+    return Promise.all([
+      eventsStore.append(new TestEvent(aggregateId1)),
+      eventsStore.append(new TestEvent(aggregateId2)),
+      eventsStore.append(new TestEvent(aggregateId1)),
+    ]).then(() => eventsStore.getEventsOfAggregate(aggregateId1)
+      .then((result) => {
+      // expect right number of events
+        chai.expect(result).to.have.length(2);
+        // expect right order of Ids
+        const aggregateIds = map(result, 'aggregateId');
+        chai.expect(aggregateIds).to.deep.include(aggregateId1);
+        chai.expect(aggregateIds).and.not.include(aggregateId2);
+      }));
   });
 
   it('Given several events When GetEventsOfAggregate Then return events and preserve order', () => {
     const aggregateId1 = new AggregateId('AggregateA');
-    eventsStore.append(new TestEvent(aggregateId1, 1));
-    eventsStore.append(new TestEvent(aggregateId1, 2));
-    eventsStore.append(new TestEvent(aggregateId1, 3));
-
-    const result = eventsStore.getEventsOfAggregate(aggregateId1);
-
-    chai.expect(result).to.have.length(3);
-    chai.expect(sortBy(result, 'num')).to.deep.equals(result);
+    return Promise.all([
+      eventsStore.append(new TestEvent(aggregateId1, 1)),
+      eventsStore.append(new TestEvent(aggregateId1, 2)),
+      eventsStore.append(new TestEvent(aggregateId1, 3)),
+    ]).then(() => eventsStore.getEventsOfAggregate(aggregateId1)
+      .then((result) => {
+        chai.expect(result).to.have.length(3);
+        chai.expect(sortBy(result, 'num')).to.deep.equals(result);
+      }));
   });
 });
