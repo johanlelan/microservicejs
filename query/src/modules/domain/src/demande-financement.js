@@ -11,39 +11,17 @@ const DemandeFinancementId = require('./demande-financement-id');
 const DemandeFinancementCreated = require('./event-demande-financement-created');
 const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
-// errors
-const ErrorPermissions = require('./ErrorPermissions');
-const ErrorDomainValidation = require('./ErrorDomainValidation');
+// rule engine
+const engine = require('./demande-financement-rules');
 
 exports.create = function create(author, content) {
-  return [
+  return Promise.resolve([
     new DemandeFinancementCreated(
       new DemandeFinancementId(infrastructure.idGenerator.generate()),
       author,
       content,
     ),
-  ];
-};
-
-exports.canCreateDemandeFinancement = (user, content) => {
-  // On creation should only allow REQUESTED and SUPPORTED status
-  if (content && [undefined, 'REQUESTED', 'SUPPORTED'].indexOf(content.status) === -1) {
-    throw new ErrorDomainValidation('Demande Financement Status should be REQUESTED or SUPPORTED on Creation');
-  }
-};
-
-exports.canDeleteDemandeFinancement = (deleter, content) => {
-  // Only creator can delete its demande-financement
-  if (content.author.id !== deleter.id) {
-    throw new ErrorPermissions('Only creator can delete its demandeFinancement');
-  }
-};
-
-exports.canAddMontantDemande = (user, current, montantDemande) => {
-  // Do not allow negative montantDemande
-  if (montantDemande.ttc < 0) {
-    throw new ErrorDomainValidation('Could not set a negative "MontantDemande"');
-  }
+  ]);
 };
 
 const DemandeFinancement = function DemandeFinancement(events, initState) {
@@ -79,17 +57,17 @@ const DemandeFinancement = function DemandeFinancement(events, initState) {
   self.delete = function remove(deleter) {
     // if aggregate is active then delete it
     if (self._active) {
-      return [
+      return Promise.resolve([
         new DemandeFinancementDeleted(self.aggregateId, deleter),
-      ];
+      ]);
     }
-    return [];
+    return Promise.resolve([]);
   };
 
   self.ajouterMontantDemande = function ajouterMontantDemande(author, montant) {
-    return [
+    return Promise.resolve([
       new MontantDemandeAdded(self.aggregateId, author, montant),
-    ];
+    ]);
   };
 
   self.apply = function apply(event) {
@@ -104,3 +82,32 @@ exports.createFromEvents = function createFromEvents(events) {
 exports.wrap = function wrap(state) {
   return new DemandeFinancement([], state);
 };
+
+exports.canCreateDemandeFinancement = (user, demandeFinancement) =>
+  // creation should only allow REQUESTED and SUPPORTED status
+  engine
+    .run({
+      createDemandeFinancement: {
+        user,
+        demandeFinancement,
+      },
+    });
+exports.canAddMontantDemande = (user, demandeFinancement, montantDemande) =>
+  // Do not allow negative montantDemande
+  engine
+    .run({
+      addMontantDemande: {
+        user,
+        demandeFinancement,
+        montantDemande,
+      },
+    });
+exports.canDeleteDemandeFinancement = (deleter, demandeFinancement) =>
+  // Only creator can delete its demande-financement
+  engine
+    .run({
+      deleteDemandeFinancement: {
+        user: deleter,
+        demandeFinancement,
+      },
+    });

@@ -12,7 +12,7 @@ const fakeEventStore = Infrastructure.EventStore.create(fakeLogger);
 const fakePublisher = Infrastructure.EventPublisher.create(fakeLogger);
 const fakeRepository = Infrastructure.Repository.create(Domain.DemandeFinancement, fakeEventStore);
 
-let DeleteDemandeFinancement = require('./delete')(Domain.DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
+let DeleteDemandeFinancement = require('./delete')(Domain.DemandeFinancement, fakeRepository, fakePublisher, fakeLogger);
 
 describe('Commands', () => {
   describe('Delete DemandeFinancement', () => {
@@ -70,7 +70,6 @@ describe('Commands', () => {
         DeleteDemandeFinancement = deleteDemandeFinancement(
           Domain.DemandeFinancement,
           fakeRepository,
-          fakeEventStore,
           fakePublisher,
           fakeLogger,
         );
@@ -85,7 +84,7 @@ describe('Commands', () => {
           });
           chai.assert.fail(result);
         } catch (err) {
-          chai.assert.equal(err.type, 'ErrorPermissions');
+          chai.assert.equal(err.type, 'BusinessRuleError');
         }
       });
     });

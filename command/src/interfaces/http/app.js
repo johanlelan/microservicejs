@@ -37,9 +37,10 @@ function runApp(commandHandler, logger, callback) {
         data: req.body,
       };
 
-      return commandHandler.demandeFinancement.create(command).then((result) => {
-        res.setHeader('Location', `/demandes-financement/${result.aggregateId.id}`);
-        res.status(201).json(result);
+      return commandHandler.demandeFinancement.create(command).then((events) => {
+        const creationEvent = events.find(event => event.type === 'DemandeFinancementCreated');
+        res.setHeader('Location', `/demandes-financement/${creationEvent.aggregateId.id}`);
+        res.status(201).json(creationEvent);
       }).catch(next);
     },
   );
@@ -75,7 +76,7 @@ function runApp(commandHandler, logger, callback) {
       };
 
       return commandHandler.demandeFinancement.delete(command).then(() => {
-        res.status(204).json(req.body);
+        res.status(204).send();
       }).catch(next);
     },
   );

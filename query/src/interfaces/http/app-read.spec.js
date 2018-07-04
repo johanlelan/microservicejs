@@ -73,6 +73,7 @@ describe('READ API', () => {
         montant: {
           ttc: 1234.56,
         },
+        status: 'REQUESTED',
       },
       json: true,
       headers: {
@@ -106,6 +107,7 @@ describe('READ API', () => {
         montant: {
           ttc: 1234.56,
         },
+        status: 'REQUESTED',
       },
       json: true,
       headers: {

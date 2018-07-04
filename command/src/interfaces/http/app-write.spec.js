@@ -103,6 +103,7 @@ describe('WRITE API', () => {
         montant: {
           ttc: 1234.56,
         },
+        status: 'REQUESTED',
       },
       json: true,
       headers: {
@@ -110,6 +111,7 @@ describe('WRITE API', () => {
       },
     };
     return request(options, (err, resp, body) => {
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       done(err);
     }).auth(username, password);
@@ -140,6 +142,7 @@ describe('WRITE API', () => {
         montant: {
           ttc: 1234.56,
         },
+        status: 'SUPPORTED',
       },
       json: true,
       headers: {
@@ -147,14 +150,12 @@ describe('WRITE API', () => {
       },
     };
     return request(options, (err, resp, body) => {
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       const montantDemandeOptions = {
         method: 'PUT',
         uri: `http://localhost:3000${resp.headers.location}/montantDemande`,
-        json: [
-          { op: 'add', path: '/title', value: 'my title' },
-          { op: 'replace', path: '/motant/ttc', value: 6543.21 },
-        ],
+        json: { ttc: 6543.21 },
         headers: {
           'X-Request-Id': '7.1',
         },
@@ -174,6 +175,7 @@ describe('WRITE API', () => {
         montantDemande: {
           ttc: 1234.56,
         },
+        status: 'SUPPORTED',
       },
       json: true,
       headers: {
@@ -181,6 +183,7 @@ describe('WRITE API', () => {
       },
     };
     return request(options, (err, resp, body) => {
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       const montantDemandeOptions = {
         method: 'PUT',
@@ -207,6 +210,7 @@ describe('WRITE API', () => {
         montant: {
           ttc: 1234.56,
         },
+        status: 'SUPPORTED',
       },
       json: true,
       headers: {
@@ -214,6 +218,7 @@ describe('WRITE API', () => {
       },
     };
     return request(options, (err, resp, body) => {
+      chai.expect(resp).have.property('statusCode', 201);
       chai.expect(body).have.property('aggregateId');
       const deleteDemandeFinancementOptions = {
         method: 'DELETE',

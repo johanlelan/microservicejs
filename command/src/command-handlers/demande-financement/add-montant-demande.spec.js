@@ -20,7 +20,7 @@ const fakeRepository = {
   },
 };
 
-let AddMontantDemandeCommand = require('./add-montant-demande')(Domain.DemandeFinancement, fakeRepository, fakeEventStore, fakePublisher, fakeLogger);
+let AddMontantDemandeCommand = require('./add-montant-demande')(Domain.DemandeFinancement, fakeRepository, fakePublisher, fakeLogger);
 
 describe('Commands', () => {
   describe('Add "Montant Demande"', () => {
@@ -90,7 +90,6 @@ describe('Commands', () => {
         AddMontantDemandeCommand = addMontantDemande(
           Domain.DemandeFinancement,
           fakeRepository,
-          fakeEventStore,
           fakePublisher,
           fakeLogger,
         );
@@ -108,7 +107,7 @@ describe('Commands', () => {
           });
           chai.assert.fail(result);
         } catch (err) {
-          chai.assert.equal(err.type, 'ErrorDomainValidation');
+          chai.assert.equal(err.type, 'BusinessRuleError');
         }
       });
     });

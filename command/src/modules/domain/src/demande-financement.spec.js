@@ -10,10 +10,6 @@ const DemandeFinancementCreated = require('./event-demande-financement-created')
 const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 
-// errors
-const ErrorDomainValidation = require('./ErrorDomainValidation');
-const ErrorPermissions = require('./ErrorPermissions');
-
 chai.use(assertArrays);
 
 describe('Demande-financement Aggregate', () => {
@@ -27,38 +23,39 @@ describe('Demande-financement Aggregate', () => {
     chai.expect(demandeFinancementId.toString()).to.equal(('demandeFinancement:M1'));
   });
 
-  it('When create demandeFinancement Then raise DemandeFinancementCreated', () => {
-    const eventsRaised = DemandeFinancement.create(author, demandeFinancementContent);
-
-    chai.expect(eventsRaised).to.have.length(1);
-    const event = eventsRaised[0];
-    chai.expect(event).to.be.an.instanceof(DemandeFinancementCreated);
-    chai.expect(event.author).to.equal(author);
-    chai.expect(event.content).to.equal(demandeFinancementContent);
-    chai.expect(event.aggregateId).to.be
-      .instanceOf(DemandeFinancementId);
-  });
+  it('When create demandeFinancement Then raise DemandeFinancementCreated', () => DemandeFinancement.create(author, demandeFinancementContent)
+    .then((eventsRaised) => {
+      chai.expect(eventsRaised).to.have.length(1);
+      const event = eventsRaised[0];
+      chai.expect(event).to.be.an.instanceof(DemandeFinancementCreated);
+      chai.expect(event.author).to.equal(author);
+      chai.expect(event.content).to.equal(demandeFinancementContent);
+      chai.expect(event.aggregateId).to.be.instanceOf(DemandeFinancementId);
+    }));
 
   it('When create several demandeFinancements Then demandeFinancementId is not same', () => {
     const eventsRaised = [];
-    DemandeFinancement
-      .create(author, demandeFinancementContent)
-      .forEach(event => eventsRaised.push(event));
-    DemandeFinancement
-      .create(author, demandeFinancementContent)
-      .forEach(event => eventsRaised.push(event));
-
-    chai.expect(eventsRaised[0].aggregateId)
-      .not
-      .to
-      .equal(eventsRaised[1].aggregateId);
+    DemandeFinancement.create(author, demandeFinancementContent)
+      .then((events) => {
+        events.forEach(event => eventsRaised.push(event));
+        DemandeFinancement.create(author, demandeFinancementContent)
+          .then((events2) => {
+            events2.forEach(event => eventsRaised.push(event));
+            chai.expect(eventsRaised[0].aggregateId)
+              .not
+              .to
+              .equal(eventsRaised[1].aggregateId);
+          });
+      });
   });
 
   it('When create demandeFinancement Then return an event with demandeFinancementId as aggregateId', () => {
-    const events = DemandeFinancement.create(author, demandeFinancementContent);
-    chai.expect(events).to.have.length(1);
-    chai.expect(events[0]).to.have.property('aggregateId');
-    chai.expect(events[0].aggregateId).to.be.instanceOf(DemandeFinancementId);
+    DemandeFinancement.create(author, demandeFinancementContent)
+      .then((events) => {
+        chai.expect(events).to.have.length(1);
+        chai.expect(events[0]).to.have.property('aggregateId');
+        chai.expect(events[0].aggregateId).to.be.instanceOf(DemandeFinancementId);
+      });
   });
 
   it('When create DemandeFinancementCreated Then aggregateId is demandeFinancementId', () => {
@@ -83,12 +80,13 @@ describe('Demande-financement Aggregate', () => {
     ]);
     const deleter = author;
 
-    const eventsRaised = userDemandeFinancement.delete(deleter);
-
-    const expectedEvent =
-      new DemandeFinancementDeleted(deleteDemandeFinancementId, deleter);
-    chai.expect(eventsRaised).to.be.ofSize(1);
-    chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+    userDemandeFinancement.delete(deleter)
+      .then((eventsRaised) => {
+        const expectedEvent =
+        new DemandeFinancementDeleted(deleteDemandeFinancementId, deleter);
+        chai.expect(eventsRaised).to.be.ofSize(1);
+        chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+      });
   });
 
   it('Given deleted demandeFinancement When delete Then nothing', () => {
@@ -101,9 +99,10 @@ describe('Demande-financement Aggregate', () => {
       new DemandeFinancementDeleted(demandeFinancementId, author),
     ]);
 
-    const eventsRaised = userDemandeFinancement.delete(author);
-
-    chai.expect(eventsRaised).to.have.length(0);
+    userDemandeFinancement.delete(author)
+      .then((eventsRaised) => {
+        chai.expect(eventsRaised).to.have.length(0);
+      });
   });
 
 
@@ -134,15 +133,16 @@ describe('Demande-financement Aggregate', () => {
         demandeFinancementContent,
       ),
     ]);
-    const eventsRaised = userDemandeFinancement.ajouterMontantDemande(
+    userDemandeFinancement.ajouterMontantDemande(
       { id: 'updator' },
       { ttc: 123.56 },
-    );
-    chai.expect(eventsRaised).to.be.ofSize(1);
-    const expectedEvent =
-    new MontantDemandeAdded(demandeFinancementId, author, 123.56);
-    chai.expect(eventsRaised).to.be.ofSize(1);
-    chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+    ).then((eventsRaised) => {
+      chai.expect(eventsRaised).to.be.ofSize(1);
+      const expectedEvent =
+      new MontantDemandeAdded(demandeFinancementId, author, 123.56);
+      chai.expect(eventsRaised).to.be.ofSize(1);
+      chai.expect(eventsRaised[0].aggregateId).to.deep.equal(expectedEvent.aggregateId);
+    });
   });
 
   describe('State', () => {
@@ -184,35 +184,24 @@ describe('Demande-financement Aggregate', () => {
   describe('Permission functions', () => {
     it(
       'canCreateDemandeFinancement should throw an Exception on invalid status',
-      () => chai.expect(() => DemandeFinancement.canCreateDemandeFinancement(
-        {},
-        {
-          status: 'REGISTERED',
-        },
-      )).to.throw(ErrorDomainValidation, 'Demande Financement Status should be REQUESTED or SUPPORTED on Creation'),
+      () => DemandeFinancement.canCreateDemandeFinancement({}, { status: 'REGISTERED' }).catch((error) => {
+        chai.expect(error.type).to.equal('BusinessRuleError');
+        chai.expect(error.message).to.equal('Demande Financement Status should be REQUESTED or SUPPORTED on Creation');
+      }),
     );
     it(
       'canAddMontantDemande should throw an Exception on negative amount',
-      () => chai.expect(() => DemandeFinancement.canAddMontantDemande(
-        {},
-        {},
-        {
-          ttc: -1,
-        },
-      )).to.throw(ErrorDomainValidation, 'Could not set a negative "MontantDemande"'),
+      () => DemandeFinancement.canAddMontantDemande({}, {}, { ttc: -1 }).catch((error) => {
+        chai.expect(error.type).to.equal('BusinessRuleError');
+        chai.expect(error.message).to.equal('Demande Financement Status should be REQUESTED or SUPPORTED on Creation');
+      }),
     );
     it(
       'canDeleteDemandeFinancement should throw an Exception when deleter is not creator',
-      () => chai.expect(() => DemandeFinancement.canDeleteDemandeFinancement(
-        {
-          id: 'deleter',
-        },
-        {
-          author: {
-            id: 'creator',
-          },
-        },
-      )).to.throw(ErrorPermissions, 'Only creator can delete its demandeFinancement'),
+      () => DemandeFinancement.canDeleteDemandeFinancement({ id: 'deleter' }, { author: { id: 'creator' } }).catch((error) => {
+        chai.expect(error.type).to.equal('BusinessRuleError');
+        chai.expect(error.message).to.equal('Demande Financement Status should be REQUESTED or SUPPORTED on Creation');
+      }),
     );
     it(
       'canCreateDemandeFinancement should allow REQUESTED status',
