@@ -8,10 +8,9 @@ const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate
   this.getAggregate = function getAggregate() {
     return Aggregate;
   };
-  // TODO JLL: getbyId should be a promise
   this.getById = async function getById(aggregateId) {
     // find into mongodb the given aggregateId
-    const state = await collection.findOne({ _id: aggregateId.id });
+    const state = await collection.findOne({ _id: aggregateId.id }, { _id: 0 });
     if (!state) {
       debug(`No entry for Aggregate ${state.aggregateId.id} in ${collection.collectionName}`, state);
       throw new AggregateNotFound('Not Found', { aggregateId });
@@ -42,7 +41,8 @@ module.exports = mongoURL => MongoDB.MongoClient.connect(mongoURL, {
     create: function create(Aggregate, collectionName) {
       const stateDB = connection.db('states');
       const collection = stateDB.collection(collectionName);
-      // TODO JLL: ensure index for state collection
+      // Ensure index for state collection
+      // no index for now except _id
       return new StateRepositoryMongo(collection, Aggregate);
     },
   }));

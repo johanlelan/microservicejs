@@ -4,7 +4,7 @@
 const passport = require('passport');
 const PassportHttp = require('passport-http');
 
-// TODO JLL: temporary use fix users list
+// Temporary use fix users list
 const users = [
   { id: 'writer', title: 'Writer', password: 'retirw' },
   { id: 'admin', title: 'Admin', password: 'nimda' },

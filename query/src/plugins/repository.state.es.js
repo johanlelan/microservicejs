@@ -10,8 +10,7 @@ const StateRepositoryElasticsearch = function StateRepositoryElasticsearch(Aggre
     return events;
   };
 
-  // TODO JLL: getbyId should be a promise
-  this.getById = function getById(id) {
+  this.getById = async function getById(id) {
     const events = getAllEvents(id);
     const state = Aggregate.createFromEvents(events);
 

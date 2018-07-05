@@ -11,7 +11,6 @@ const Repository = function Repository(Aggregate, eventsStore) {
       });
   };
 
-  // TODO JLL: getbyId should be a promise
   this.getById = function getById(id) {
     return getAllEvents(id)
       .then(events => Aggregate.createFromEvents(events));
