@@ -13,12 +13,11 @@ const KafkaService = {
     };
     const config = {
       zkConStr: process.env.KAFKA_URL || 'localhost:2181/',
-      groupId: 'event-stream',
       workerPerPartition: 1,
       options: {
         sessionTimeout: 8000,
         protocol: ['roundrobin'],
-        fromOffset: 'earliest', // latest
+        fromOffset: 'earliest', // 'latest'
         fetchMaxBytes: 1024 * 100,
         fetchMinBytes: 1,
         fetchMaxWaitMs: 10,
@@ -42,7 +41,8 @@ const KafkaService = {
         logger.error('When creating topics', errTopics);
       }
       if (mode === 'COMMAND') {
-        config.clientName = 'publisher-event-stream';
+        config.clientName = 'publish-event-stream';
+        config.groupId = 'publish-event-stream';
         const kafkaStreams = new KafkaStreams(config);
         const stream = kafkaStreams.getKStream();
         stream.to(`${topic}.events.out`);
@@ -54,14 +54,20 @@ const KafkaService = {
         });
       } else {
         config.clientName = 'query-event-stream';
+        config.groupId = 'query-event-stream';
         const kafkaStreams = new KafkaStreams(config);
         const stream = kafkaStreams.getKStream();
 
         stream
           .from(`${topic}.events.out`)
-          .mapJSONConvenience() // {key: Buffer, value: Buffer} -> {key: string, value: Object}
+          // {key: Buffer, value: Buffer} -> {key: string, value: Object}
+          .mapJSONConvenience()
           .forEach(async (message) => {
             const event = message.value;
+            if (typeof event !== 'object') {
+              logger.info('[Kafka] Can not process message, it is not an object.', message);
+              return message;
+            }
             const type = event.type || '';
             let state;
             if (type.indexOf('Created') === -1) {

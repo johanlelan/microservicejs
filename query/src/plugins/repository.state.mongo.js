@@ -12,7 +12,7 @@ const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate
     // find into mongodb the given aggregateId
     const state = await collection.findOne({ _id: aggregateId.id }, { _id: 0 });
     if (!state) {
-      debug(`No entry for Aggregate ${state.aggregateId.id} in ${collection.collectionName}`, state);
+      debug(`No entry for Aggregate ${aggregateId.id} in ${collection.collectionName}`, state);
       throw new AggregateNotFound('Not Found', { aggregateId });
     }
     debug(`Aggregate ${state.aggregateId.id} found in MongoDB`);
