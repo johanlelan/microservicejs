@@ -6,7 +6,6 @@ class UserId {
       throw new ErrorDomainValidation();
     }
     this.id = id;
-    Object.freeze(this);
   }
 
   equals(other) {

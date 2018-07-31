@@ -1,0 +1,61 @@
+[
+  {
+    "conditions": {
+      "all": [{
+        "fact": "createDemandeFinancement",
+        "path": ".demandeFinancement.status",
+        "operator": "notEqual",
+        "value": "REQUESTED"
+      }, {
+        "fact": "createDemandeFinancement",
+        "path": ".demandeFinancement.status",
+        "operator": "notEqual",
+        "value": "SUPPORTED"
+      }]
+    },
+    "event": {
+      "type": "BusinessRuleError",
+      "params": {
+        "statusCode": 422,
+        "message": "Demande Financement Status should be REQUESTED or SUPPORTED on Creation"
+      }
+    }
+  },
+  {
+    "conditions": {
+      "all": [{
+        "fact": "addMontantDemande",
+        "path": ".montantDemande.ttc",
+        "operator": "lessThan",
+        "value": 0
+      }]
+    },
+    "event": {
+      "type": "BusinessRuleError",
+      "params": {
+        "statusCode": 422,
+        "message": "Could not set a negative \"MontantDemande\""
+      }
+    }
+  },
+  {
+    "conditions": {
+      "all": [{
+        "fact": "deleteDemandeFinancement",
+        "path": ".demandeFinancement.author.id",
+        "operator": "notEqual",
+        "value": {
+          "fact": "deleteDemandeFinancement",
+          "path": ".user.id"
+        }
+      }]
+    },
+    "event": {
+      "type": "BusinessRuleError",
+      "params": {
+        "statusCode": 403,
+        "message": "Only creator can delete its demandeFinancement"
+      }
+    }
+  }
+]

@@ -1,7 +1,6 @@
 class DemandeFinancementId {
   constructor(id) {
     this.id = id;
-    Object.freeze(this);
   }
 
   equals(other) {

@@ -13,6 +13,8 @@ module.exports = {
       {
         allow: [
           '_meta',
+          '_id',
+          '_created',
           '_updated',
           '_deleted',
         ]

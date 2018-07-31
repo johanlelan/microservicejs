@@ -26,7 +26,6 @@ describe('Events Store', () => {
   class AggregateId {
     constructor(id) {
       this.id = id;
-      Object.freeze(this);
     }
 
     equals(other) {

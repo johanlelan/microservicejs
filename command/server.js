@@ -16,29 +16,35 @@ const Infrastructure = require('./src/modules/infrastructure');
 const handlers = require('./src/command-handlers/index.js');
 const writeAPI = require('./src/interfaces/http/app');
 
-const eventStore = Infrastructure.EventStore.create(Infrastructure.logger);
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
 const eventBus = Infrastructure.EventBus.create(concreteEvent);
 const commandBus = Infrastructure.CommandBus.create(concreteCommand);
-const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
-
-// every published events should be saved into event-store
-publisher.onAny((event) => {
-  eventStore.append(event);
-});
 
 debug('Initializing command server...');
 
-handlers(repository, publisher, Infrastructure.logger)
-  .then((handler) => {
-    Infrastructure.logger.info('[Command] handler created');
-    // connect to message broker
-    Promise.all([
-      eventBus.connect(publisher, eventStore, repository, Infrastructure.logger, 'COMMAND'),
-      commandBus.connect(handler, publisher, eventStore, Infrastructure.logger),
-    ]);
-    writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
-      if (errCommand) { throw (errCommand); }
-      Infrastructure.logger.info('[Command] HTTP API started');
+// Mongodb states repository
+require('./src/plugins/repository.event.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017', Infrastructure.logger)
+  .then((eventRepository) => {
+    const repository = eventRepository.create(Domain.DemandeFinancement, 'demande-financement');
+    const eventStore = Infrastructure.EventStore.create(Infrastructure.logger, repository);
+
+    // every published events should be saved into event-store
+    publisher.onAny((event) => {
+      eventStore.append(event);
     });
+    // connect to message broker
+    handlers(repository, publisher, Infrastructure.logger)
+      .then((handler) => {
+        Infrastructure.logger.info('[Command] handler created');
+        // connect to message broker
+        Promise.all([
+          // no repository needed for propagate event
+          eventBus.connect(publisher, eventStore, null, Infrastructure.logger, 'COMMAND'),
+          commandBus.connect(handler, publisher, eventStore, Infrastructure.logger),
+        ]);
+        writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
+          if (errCommand) { throw (errCommand); }
+          Infrastructure.logger.info('[Command] HTTP API started');
+        });
+      });
   });

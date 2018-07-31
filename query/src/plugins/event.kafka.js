@@ -69,13 +69,14 @@ const KafkaService = {
               return message;
             }
             const type = event.type || '';
+            const aggregateId = event.aggregateId && event.aggregateId.id;
+            logger.info(`[Kafka] Apply event ${type} on current DB state of Aggregate ${aggregateId}`);
             let state;
             if (type.indexOf('Created') === -1) {
               // get current state
               state = await repository.getById(event.aggregateId);
               // apply new event
               state.apply(event);
-              logger.info(`[Kafka] Apply event on current DB state of Aggregate ${event.aggregateId}`);
             } else {
               // create new state
               state = repository.getAggregate().createFromEvents([event]);

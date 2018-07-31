@@ -8,7 +8,6 @@ class DemandeFinancementCreated {
     this.author = author;
     this.timestamp = Date.now();
     this.content = content;
-    Object.freeze(this);
   }
 }
 

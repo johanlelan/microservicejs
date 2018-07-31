@@ -34,4 +34,34 @@ ab -A admin:nimda -v 2 \
     -c 20 \
     -n 500 \
     -l \
+    -r \
     http://localhost:3000/demandes-financement > ab-results.txt 2>&1
+
+# Re-init consumers
+
+To reset offset of kafka consumers:
+
+```sh
+# Stop the consumer
+docker-compose stop query
+# Clear offset for a consumer, topic by its id
+# "query-event-stream" is the group-id of query service
+docker exec -it microservicejs_zookeeper_1 bash
+root@zookeeper:/# kafka-consumer-groups --bootstrap-server broker:9092 --reset-offsets --to-offset 0  --topic demandes-financement.events.out --group query-event-stream --execute
+Note: This will not show information about old Zookeeper-based consumers.
+
+TOPIC                          PARTITION  NEW-OFFSET
+demandes-financement.events.out 0          0
+root@zookeeper:/#
+```
+
+## FAQ
+
+```sh
+docker exec -it microservicejs_zookeeper_1 bash
+root@zookeeper:/# kafka-consumer-groups --bootstrap-server broker:9092 --reset-offsets --to-offset 0  --topic demandes-financement.events.out --group query-event-stream --execute
+Note: This will not show information about old Zookeeper-based consumers.
+Error: Assignments can only be reset if the group 'query-event-stream' is inactive, but the current state is Stable.
+```
+
+If you see this sentence on reset-offsets command then *the consumer is not stopped*.

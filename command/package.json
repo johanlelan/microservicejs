@@ -21,6 +21,7 @@
     "kafka-node": "^2.6.1",
     "kafka-streams": "^4.4.0",
     "lodash.get": "^4.4.2",
+    "mongodb": "^3.1.1",
     "passport": "^0.4.0",
     "passport-http": "^0.3.0",
     "pino": "^4.16.1",

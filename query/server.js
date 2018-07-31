@@ -25,7 +25,7 @@ publisher.onAny((event) => {
 debug('Initializing query server...');
 
 // Mongodb states repository
-require('./src/plugins/repository.state.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017')
+require('./src/plugins/repository.state.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017', Infrastructure.logger)
   .then((stateRepositoryImpl) => {
     const repository = stateRepositoryImpl.create(Domain.DemandeFinancement, 'demande-financement');
 

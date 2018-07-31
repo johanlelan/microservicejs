@@ -12,7 +12,11 @@ const DemandeFinancementCreated = require('./event-demande-financement-created')
 const MontantDemandeAdded = require('./event-montant-demande-added');
 const DemandeFinancementDeleted = require('./event-demande-financement-deleted');
 // rule engine
-const engine = require('./demande-financement-rules');
+const EngineManager = require('./demande-financement-rules');
+// business rules
+const rules = require('./business-rules.json');
+
+const engine = EngineManager.create(rules);
 
 exports.create = function create(author, content) {
   return Promise.resolve([
@@ -39,6 +43,7 @@ const DemandeFinancement = function DemandeFinancement(events, initState) {
     self.aggregateId = event.aggregateId;
     self.author = event.author;
     self._active = true;
+    self._created = event.timestamp;
     Object.keys(event.content).forEach((key) => {
       // should not manage properties
       // aggregateId, author
@@ -85,13 +90,12 @@ exports.wrap = function wrap(state) {
 
 exports.canCreateDemandeFinancement = (user, demandeFinancement) =>
   // creation should only allow REQUESTED and SUPPORTED status
-  engine
-    .run({
-      createDemandeFinancement: {
-        user,
-        demandeFinancement,
-      },
-    });
+  engine.run({
+    createDemandeFinancement: {
+      user,
+      demandeFinancement,
+    },
+  });
 exports.canAddMontantDemande = (user, demandeFinancement, montantDemande) =>
   // Do not allow negative montantDemande
   engine
@@ -103,7 +107,7 @@ exports.canAddMontantDemande = (user, demandeFinancement, montantDemande) =>
       },
     });
 exports.canDeleteDemandeFinancement = (deleter, demandeFinancement) =>
-  // Only creator can delete its demande-financement
+  // Deletion, only creator can delete its demande-financement
   engine
     .run({
       deleteDemandeFinancement: {
@@ -111,3 +115,4 @@ exports.canDeleteDemandeFinancement = (deleter, demandeFinancement) =>
         demandeFinancement,
       },
     });
+

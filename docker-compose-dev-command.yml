@@ -1,9 +1,10 @@
 version: '3'
 services:
   mongodb:
-   image: mongo:latest
-   ports:
-     - "27018:27017"
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    restart: on-failure
   zookeeper:
     image: confluentinc/cp-zookeeper
     hostname: zookeeper
@@ -14,6 +15,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    restart: on-failure
   broker:
     image: confluentinc/cp-kafka
     extra_hosts:
@@ -27,6 +29,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:9092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: on-failure
   schema_registry:
     image: confluentinc/cp-schema-registry
     extra_hosts:
@@ -39,6 +42,7 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema_registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+    restart: on-failure
   kafka-rest:
     image: confluentinc/cp-kafka-rest
     extra_hosts:
@@ -54,11 +58,4 @@ services:
       KAFKA_REST_LISTENERS: http://kafka-rest:8082
       KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KAFKA_REST_HOST_NAME: kafka-rest
-  command:
-    build: ./command
-    environment:
-      KAFKA_URL: 'zookeeper:2181'
-    ports:
-      - "3000:3000"
-    depends_on:
-      - zookeeper
+    restart: on-failure

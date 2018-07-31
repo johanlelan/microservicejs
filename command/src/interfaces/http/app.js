@@ -40,7 +40,8 @@ function runApp(commandHandler, logger, callback) {
       return commandHandler.demandeFinancement.create(command).then((events) => {
         const creationEvent = events.find(event => event.type === 'DemandeFinancementCreated');
         res.setHeader('Location', `/demandes-financement/${creationEvent.aggregateId.id}`);
-        res.status(201).json(creationEvent);
+        req.body.aggregateId = creationEvent.aggregateId;
+        res.status(201).json(req.body);
       }).catch(next);
     },
   );
