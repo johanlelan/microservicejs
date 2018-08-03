@@ -1,4 +1,4 @@
-/* eslint no-underscore-dangle: ["error", { "allow": ["_active", "_updated", "_deleted"] }] */
+/* eslint no-underscore-dangle: ["error",{"allow":["_active","_created","_updated","_deleted"]}] */
 
 // An aggregate + a command should return a array of events
 // const get = require('lodash.get');
