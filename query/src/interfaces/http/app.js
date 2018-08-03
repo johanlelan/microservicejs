@@ -4,6 +4,8 @@ const debug = require('debug')('microservice:query:rest-api');
 const express = require('express');
 const bodyParser = require('body-parser');
 const pino = require('express-pino-logger')();
+const compression = require('compression');
+const responseTime = require('response-time');
 
 const Domain = require('../../modules/domain');
 
@@ -13,6 +15,9 @@ const ensureLoggedIn = require('./middlewares/ensure-logged-in');
 debug('Starting HTTP endpoints');
 
 const app = express();
+app.use(compression());
+// Add a X-Response-Time header to responses.
+app.use(responseTime());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({}));
 app.use(pino);

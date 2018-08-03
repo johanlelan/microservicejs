@@ -22,10 +22,10 @@ COPY . /src
 ENV NODE_ENV 'production'
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8080 9229
 
 # At the end, set the user to use when running this image
 USER node
 
 # Run app
-CMD ["node", "server.js"]
+CMD ["node", "--inspect", "server.js"]
