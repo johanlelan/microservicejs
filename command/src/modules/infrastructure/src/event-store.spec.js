@@ -14,6 +14,7 @@ const EventShouldContainsTimestamp = require('./EventShouldContainsTimestamp');
 const fakeLogger = {
   info: () => (undefined), // console.info,
   debug: () => (undefined), // console.debug,
+  error: () => (undefined), // console.error,
 };
 chai.use(assertArrays);
 

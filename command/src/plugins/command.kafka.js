@@ -4,7 +4,7 @@ const kafka = require('kafka-node');
 const topic = 'demandes-financement';
 
 const KafkaService = {
-  connect: (handler, publisher, eventStore, logger) => {
+  connect: (handler, logger) => {
     const zkOptions = {
       sessionTimeout: 300,
       spinDelay: 100,

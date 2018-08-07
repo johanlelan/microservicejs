@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({}));
 app.use(pino);
 
-function runApp(eventStore, repository, logger, callback) {
+function runApp(repository, logger, callback) {
   let port = 3001;
   if (process.env.API_PORT) {
     port = parseInt(process.env.API_PORT, 10);

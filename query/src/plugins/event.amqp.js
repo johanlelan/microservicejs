@@ -5,7 +5,7 @@ const debug = Debug('microservice:infrastructure:bus:commands:amqp');
 
 const queue = 'demandes-financement';
 
-exports.connect = (publisher, eventStore, repository, logger, mode) => amqp.connect(process.env.AMQP_URL || 'amqp://localhost:5672')
+exports.connect = (publisher, repository, logger, mode) => amqp.connect(process.env.AMQP_URL || 'amqp://localhost:5672')
   .then((connection) => {
     debug('Connection established');
     return connection;
@@ -30,7 +30,7 @@ exports.connect = (publisher, eventStore, repository, logger, mode) => amqp.conn
     ]);
     function saveEvent(msg) {
       const event = JSON.parse(msg.content);
-      eventStore.append(event);
+      repository.save(event);
       logger.info(`Append event ${event.type} into eventStore`);
       return Promise.resolve();
     }

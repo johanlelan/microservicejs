@@ -30,52 +30,13 @@ publisher.onAny(event => eventStore.append(event));
 let init = false;
 let ending = false;
 
-/*
-let connection = 0;
-// first connection will throw an error
-// second will be good
-// third connection will throw an error
-// and so forth
-mockBusCommand.stub.callsFake(() => {
-  if (connection === 0) {
-    connection = 1;
-    return Promise.reject({ message: 'Mock a connect error'});
-  } else if (connection === 1) {
-    connection = 2;
-    return Promise.resolve(mockBusCommand.connect);
-  } else if (process.env.API_PORT === 3002) {
-    connection = 3;
-    return Promise.resolve(mockBusCommand.connect);
-  } else if (process.env.API_PORT === 3003) {
-    connection = 4;
-    return Promise.resolve(mockBusCommand.connect);
-  }
-  return Promise.resolve(mockBusCommand.connect);
-});
-mockBusEvent.stub.callsFake(() => {
-  if (connection === 0) {
-    connection = 1;
-    return Promise.reject({ message: 'Mock a connect error'});
-  } else if (connection === 1) {
-    connection = 2;
-    return Promise.resolve(mockBusEvent.connect);
-  } else if (process.env.API_PORT === 3002) {
-    connection = 3;
-    return Promise.resolve(mockBusEvent.connect);
-  } else if (process.env.API_PORT === 3003) {
-    connection = 4;
-    return Promise.resolve(mockBusEvent.connect);
-  }
-  return Promise.resolve(mockBusEvent.connect);
-});
-*/
 before((donePreparing) => {
   if (init) {
     donePreparing();
   } else {
   // wait until app is started
   // first connection will fail
-    commandMessaging.connect(undefined, publisher, eventStore, logger)
+    commandMessaging.connect(undefined, logger)
       .then(() => {
         chai.assert.fail('Should fail on first connection');
       })
@@ -84,13 +45,11 @@ before((donePreparing) => {
         handlers(repository, publisher, logger)
           .then(commandHandler => commandMessaging.connect(
             commandHandler,
-            publisher,
-            eventStore,
             logger,
           ).then(() =>
           // console.log('[HTTP] start express app');
             readAPI.run(
-              eventStore, repository, logger,
+              repository, logger,
               (err) => {
                 if (err) {
                   donePreparing(err);
@@ -116,9 +75,9 @@ after((doneCleaning) => {
   return writeAPI.run(undefined, logger, (errWRITE) => {
     if (errWRITE) return doneCleaning(errWRITE);
     process.env.API_PORT = 3004;
-    return eventMessaging.connect(publisher, eventStore, repository, logger)
+    return eventMessaging.connect(publisher, repository, logger)
       .then(bus => bus.createChannel())
-      .then(() => readAPI.run(eventStore, repository, logger, (errREAD) => {
+      .then(() => readAPI.run(repository, logger, (errREAD) => {
         ending = true;
         return doneCleaning(errREAD);
       }))

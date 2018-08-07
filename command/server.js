@@ -23,14 +23,14 @@ const commandBus = Infrastructure.CommandBus.create(concreteCommand);
 debug('Initializing command server...');
 
 // Mongodb states repository
-require('./src/plugins/repository.event.mongo')(process.env.MONGO_URL || 'mongodb://localhost:27017', Infrastructure.logger)
-  .then((eventRepository) => {
-    const repository = eventRepository.create(Domain.DemandeFinancement, 'demande-financement');
-    const eventStore = Infrastructure.EventStore.create(Infrastructure.logger, repository);
+require('./src/plugins/event-store.mongo')(Infrastructure.logger, process.env.MONGO_URL || 'mongodb://localhost:27017')
+  .then((EventStoreMongoDB) => {
+    const eventStore = EventStoreMongoDB.create('demande-financement');
+    const repository = Infrastructure.Repository.create(Domain.DemandeFinancement, eventStore);
 
     // every published events should be saved into event-store
     publisher.onAny((event) => {
-      eventStore.append(event);
+      repository.save(event);
     });
     // connect to message broker
     handlers(repository, publisher, Infrastructure.logger)
@@ -39,8 +39,8 @@ require('./src/plugins/repository.event.mongo')(process.env.MONGO_URL || 'mongod
         // connect to message broker
         Promise.all([
           // no repository needed for propagate event
-          eventBus.connect(publisher, eventStore, null, Infrastructure.logger, 'COMMAND'),
-          commandBus.connect(handler, publisher, eventStore, Infrastructure.logger),
+          eventBus.connect(publisher, null, Infrastructure.logger, 'COMMAND'),
+          commandBus.connect(handler, Infrastructure.logger),
         ]);
         writeAPI.run(handler, Infrastructure.logger, (errCommand) => {
           if (errCommand) { throw (errCommand); }

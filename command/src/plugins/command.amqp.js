@@ -39,7 +39,7 @@ const consumeIncomingCommands = (commandHandler, channel, logger) => Promise.all
   channel.prefetch(1),
   channel.consume(`${queue}.commands.in`, buildMessageHandler(commandHandler, channel, logger), { noAck: true }),
 ]);
-exports.connect = (handler, publisher, eventStore, logger) => {
+exports.connect = (handler, logger) => {
   debug('Establishing AMQP connection...');
   return amqp.connect(process.env.AMQP_URL || 'amqp://localhost:5672')
     .then((connection) => {

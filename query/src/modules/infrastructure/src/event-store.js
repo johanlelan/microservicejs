@@ -4,15 +4,12 @@ const EventShouldContainsAggregateId = require('./EventShouldContainsAggregateId
 const EventShouldContainsTimestamp = require('./EventShouldContainsTimestamp');
 const EventShouldContainsAuthor = require('./EventShouldContainsAuthor');
 
-const EventsStore = function EventsStore(logger, repository) {
+/**
+ * An event-store offers save, append and getEventsOfAggregate
+ * @param {*} logger to log every I/O
+ */
+const EventsStore = function EventsStore(logger) {
   const events = [];
-
-  function save(event) {
-    if (repository) {
-      return repository.save(event);
-    }
-    return events.push(event);
-  }
 
   function validate(event) {
     if (!event.type) {
@@ -39,25 +36,27 @@ const EventsStore = function EventsStore(logger, repository) {
     return Promise.resolve(event);
   }
 
+  this.save = function save(event) {
+    events.push(event);
+    return Promise.resolve(event);
+  };
+
   this.append = function append(event) {
     return validate(event)
       .then((validatedEvent) => {
         const eventType = validatedEvent.type;
         logger.debug(`[event-store] Append new ${eventType} event`, validatedEvent);
-        save(validatedEvent);
+        this.save(validatedEvent);
         return Promise.resolve(validatedEvent);
       });
   };
 
   this.getEventsOfAggregate = function getEventsOfAggregate(aggregateId) {
-    if (repository) {
-      return repository.getById(aggregateId);
-    }
     const toString = JSON.stringify(aggregateId);
     return Promise.resolve(events.filter(event => toString === JSON.stringify(event.aggregateId)));
   };
 };
 
-exports.create = function create(logger, repository) {
-  return new EventsStore(logger, repository);
+exports.create = function create(logger) {
+  return new EventsStore(logger);
 };

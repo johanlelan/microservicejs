@@ -61,4 +61,21 @@ describe('Repository', () => {
           .have.property('aggregateId', defId);
       }));
   });
+
+  it('Given an event When Save Then same event', () => {
+    const defId = new MockAggregateId('def1');
+    const eventCreated = new MockEvent(defId);
+    return repository.save(eventCreated)
+      .then(() => repository.getById(defId)
+        .then((aggregateFromRepository) => {
+          chai.expect(aggregateFromRepository)
+            .to
+            .have.property('aggregateId', defId);
+        }));
+  });
+
+  it('Given an event When GetAggregate Then return MockAggregate', () => repository.getAggregate()
+    .then(Aggregate => chai.expect(Aggregate)
+      .to
+      .equal(MockAggregate)));
 });

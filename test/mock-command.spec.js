@@ -88,12 +88,6 @@ exports.channelStub = () => ({
   },
 });
 
-exports.connect = (handler, publisher, eventStore, logger) => {
-  publisher.onAny((event) => {
-    logger.info(`Propagate event ${event.type}`);
-    exports.propagateEvents.push(event);
-  });
-  return Promise.resolve({
-    createChannel: () => Promise.resolve(exports.channelStub(publisher, eventStore, logger)),
-  });
-};
+exports.connect = () => Promise.resolve({
+  createChannel: () => Promise.resolve(exports.channelStub()),
+});

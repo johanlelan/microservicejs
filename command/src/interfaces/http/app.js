@@ -105,6 +105,7 @@ function runApp(commandHandler, logger, callback) {
   });
 
   return app.listen(port, () => {
+    debug(`HTTP API started on http://localhost:${port}`);
     logger.info(`Listening on port http://localhost:${port}!`);
     logger.info(`API http://localhost:${port}/demandes-financement`);
     return callback();

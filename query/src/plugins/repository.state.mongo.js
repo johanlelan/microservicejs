@@ -1,29 +1,35 @@
 
-const debug = require('debug')('microservice:query:plugins:repository:mongo');
+const debug = require('debug')('microservice:command:plugins:repository:mongo');
 const MongoDB = require('mongodb');
 
 const AggregateNotFound = require('../modules/infrastructure/src/AggregateNotFound');
 
-const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate) {
-  this.getAggregate = function getAggregate() {
-    return Aggregate;
+const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate, logger) {
+  this.save = async function save(aggregate) {
+    logger.info('Save new state into DB', aggregate);
+    const insertAggregate = aggregate;
+    insertAggregate._id = aggregate.id;
+    // insert into mongodb the given eventId
+    await collection.insertOne(insertAggregate);
+    debug(`New state for Aggregate ${insertAggregate.aggregateId.id} saved into ${collection.collectionName}`);
+    return aggregate;
   };
+
   this.getById = async function getById(aggregateId) {
     // find into mongodb the given aggregateId
-    const state = await collection.findOne({ _id: aggregateId.id }, { _id: 0 });
+    const state = await collection.findOne({ id: aggregateId }, { _id: 0 });
     if (!state) {
-      debug(`No entry for Aggregate ${aggregateId.id} in ${collection.collectionName}`, state);
+      logger.debug(`No entry for Aggregate ${aggregateId.id} in ${collection.collectionName}`, state);
       throw new AggregateNotFound('Not Found', { aggregateId });
+    } else {
+      debug(`Aggregate ${aggregateId.id} found in MongoDB`);
+      return state;
     }
-    debug(`Aggregate ${state.aggregateId.id} found in MongoDB`);
-    return Aggregate.wrap(state);
   };
-  this.save = async function save(state) {
-    // find into mongodb the given aggregateId
-    await collection.update({ _id: state.aggregateId.id }, state, { upsert: true });
-    debug(`New Aggregate ${state.aggregateId.id} state saved in ${collection.collectionName}`);
-    return state;
-  };
+};
+
+exports.create = function create(logger) {
+  return new StateRepositoryMongo(logger);
 };
 
 const connectWithRetry = (mongoUrl, logger) => MongoDB.MongoClient.connect(mongoUrl, {
@@ -43,17 +49,18 @@ const connectWithRetry = (mongoUrl, logger) => MongoDB.MongoClient.connect(mongo
   setTimeout(() => connectWithRetry(mongoUrl), 5000);
 });
 
-module.exports = (mongoURL, logger) => connectWithRetry(mongoURL, logger).then((connection) => {
+module.exports = (logger, mongoURL) => connectWithRetry(mongoURL, logger).then((connection) => {
   logger.info('MongoDB Connection established', mongoURL);
   debug('MongoDB Connection established', mongoURL);
   return connection;
 }).then(connection => ({
   create: function create(Aggregate, collectionName) {
-    const stateDB = connection.db('states');
-    const collection = stateDB.collection(collectionName);
+    const eventsDB = connection.db('states');
+    const collection = eventsDB.collection(collectionName);
+    collection.ensureIndex({ 'aggregateId.id': 1 });
     // Ensure index for state collection
     // no index for now except _id
-    return new StateRepositoryMongo(collection, Aggregate);
+    return new StateRepositoryMongo(collection, Aggregate, logger);
   },
 }));
 

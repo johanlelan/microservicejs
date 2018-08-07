@@ -5,7 +5,7 @@ const { KafkaStreams } = require('kafka-streams');
 const topic = 'demandes-financement';
 
 const KafkaService = {
-  connect: (publisher, eventStore, repository, logger, mode) => {
+  connect: (publisher, repository, logger, mode) => {
     const zkOptions = {
       sessionTimeout: 300,
       spinDelay: 100,

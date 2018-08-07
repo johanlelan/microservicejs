@@ -40,5 +40,5 @@ const mockLogger = {
 };
 
 describe('Command Bus', () => {
-  it('Should init a connection', () => commandBus.connect(mockCommandHandler, undefined, undefined, mockLogger));
+  it('Should init a connection', () => commandBus.connect(mockCommandHandler, null, mockLogger));
 });

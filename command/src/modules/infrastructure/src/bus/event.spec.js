@@ -25,11 +25,6 @@ const Bus = require('./event');
 
 const eventBus = Bus.create(mockAmqp);
 
-const mockEventStore = {
-  append: () => {},
-  getEventsOfAggregate: () => [],
-};
-
 const mockLogger = {
   debug: () => (undefined), // console.debug,
   info: () => (undefined), // console.info,
@@ -42,8 +37,8 @@ const eventPublisher = EventPublisher.create(mockLogger);
 const mockRepository = {};
 
 describe('Event Bus', () => {
-  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockEventStore, mockRepository, mockLogger, 'TEST')
-    .then(() => eventBus.connect(eventPublisher, mockEventStore, mockRepository, mockLogger, 'TEST')
+  it('Should start bus even if connection failed', () => eventBus.connect(eventPublisher, mockRepository, mockLogger, 'TEST')
+    .then(() => eventBus.connect(eventPublisher, mockRepository, mockLogger, 'TEST')
       .then(() => {
         chai.assert.isOk(true);
       })));
