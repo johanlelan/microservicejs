@@ -16,15 +16,6 @@ const password = 'retirw';
 // HTTP port 3001 is for GET requests.
 // HTTP port 3000 is for POST/PUT/PATCH requests.
 describe('READ API', () => {
-  it('Should refuse Force "X-Request-Id" Header', (done) => {
-    const options = { json: true };
-    return request.get('http://localhost:3001/demandes-financement/12345', options, (err, resp, body) => {
-      chai.expect(resp).have.property('statusCode', 400);
-      chai.expect(body).have.property('detail');
-      chai.expect(body.detail).have.property('message', 'All incoming HTTP requests should have X-Request-Id header');
-      done(err);
-    });
-  });
   it('Should refuse Unauthorized requests', (done) => {
     const options = {
       method: 'GET',
@@ -94,6 +85,50 @@ describe('READ API', () => {
       return request(getDemandeFinancementOptions, (errGET, respGET) => {
         should.not.exist(errGET);
         chai.expect(respGET).have.property('statusCode', 200);
+        done(errGET);
+      }).auth(readerLogin, readerPwd);
+    }).auth(username, password);
+  });
+  it.skip('Follow all server events', (done) => {
+    const options = {
+      method: 'GET',
+      uri: 'http://localhost:3001/demandes-financement/_updates',
+    };
+    return request(options, (err, resp) => {
+      should.not.exist(err);
+      chai.expect(resp).have.property('statusCode', 200);
+      chai.expect(resp.headers).have.property('content-type', 'text/event-stream');
+      done(err);
+    }).auth(readerLogin, readerPwd);
+  });
+  it.skip('Follow a DemandeFinancement updates', (done) => {
+    const options = {
+      method: 'POST',
+      uri: 'http://localhost:3000/demandes-financement',
+      body: {
+        objet: 'Demande de financement',
+        montant: {
+          ttc: 1234.56,
+        },
+        status: 'REQUESTED',
+      },
+      json: true,
+      headers: {
+        'X-Request-Id': 'read-1',
+      },
+    };
+    return request(options, (err, resp, body) => {
+      should.not.exist(err);
+      chai.expect(resp).have.property('statusCode', 201);
+      chai.expect(body).have.property('aggregateId');
+      const getDemandeFinancementOptions = {
+        method: 'GET',
+        uri: `http://localhost:3001${resp.headers.location}/_updates`,
+      };
+      return request(getDemandeFinancementOptions, (errGET, respGET) => {
+        should.not.exist(errGET);
+        chai.expect(respGET).have.property('statusCode', 200);
+        chai.expect(respGET.headers).have.property('content-type', 'text/event-stream');
         done(errGET);
       }).auth(readerLogin, readerPwd);
     }).auth(username, password);

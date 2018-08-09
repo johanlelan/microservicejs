@@ -9,8 +9,8 @@ const responseTime = require('response-time');
 
 const Domain = require('../../modules/domain');
 
-const HTTPRequestShouldHaveXRequestID = require('./errors/HTTPRequestShouldHaveXRequestID');
 const ensureLoggedIn = require('./middlewares/ensure-logged-in');
+const sseMiddleware = require('./middlewares/server-side-events');
 
 debug('Starting HTTP endpoints');
 
@@ -22,18 +22,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({}));
 app.use(pino);
 
-function runApp(repository, logger, callback) {
+app.use(sseMiddleware);
+
+function runApp(repository, logger, sseClients, callback) {
   let port = 3001;
   if (process.env.API_PORT) {
     port = parseInt(process.env.API_PORT, 10);
   }
 
-  app.all('*', (req, res, next) => {
-    if (!req.headers['x-request-id']) {
-      throw new HTTPRequestShouldHaveXRequestID('All incoming HTTP requests should have X-Request-Id header');
-    }
-    next();
-  });
+  // propagate all incomming events to clients
+  app.get(
+    '/demandes-financement/_updates',
+    ensureLoggedIn, (req, res) => {
+      res.sseConnection.setup();
+      sseClients.add(res.sseConnection);
+    },
+  );
 
   app.get(
     '/demandes-financement/:identifier',
@@ -51,6 +55,17 @@ function runApp(repository, logger, callback) {
       } catch (err) {
         return next(err);
       }
+    },
+  );
+
+  // propagate all aggregate events to clients
+  /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "req" }] */
+  app.get(
+    '/demandes-financement/:identifier/_updates',
+    ensureLoggedIn, (req, res) => {
+      res.sseConnection.setup();
+      res.sseConnection.only(req.params.identifier);
+      sseClients.add(res.sseConnection);
     },
   );
 

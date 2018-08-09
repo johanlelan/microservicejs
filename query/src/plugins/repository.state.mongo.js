@@ -1,5 +1,5 @@
 
-const debug = require('debug')('microservice:command:plugins:repository:mongo');
+const debug = require('debug')('microservice:command:plugins:state-repository:mongo');
 const MongoDB = require('mongodb');
 
 const AggregateNotFound = require('../modules/infrastructure/src/AggregateNotFound');
@@ -10,9 +10,12 @@ const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate
     const insertAggregate = aggregate;
     insertAggregate._id = aggregate.id;
     // insert into mongodb the given eventId
-    await collection.insertOne(insertAggregate);
-    debug(`New state for Aggregate ${insertAggregate.aggregateId.id} saved into ${collection.collectionName}`);
-    return aggregate;
+    return collection.insertOne(insertAggregate)
+      .catch(error => logger.warn('Can not insert state', error))
+      .then(() => {
+        debug(`New state for Aggregate ${insertAggregate.aggregateId.id} saved into ${collection.collectionName}`);
+        return aggregate;
+      });
   };
 
   this.getById = async function getById(aggregateId) {

@@ -1,9 +1,9 @@
 version: '3'
 services:
-  mongodb:
+  mongo:
     image: mongo:latest
     ports:
-     - "27018:27017"
+     - "27017:27017"
     restart: on-failure
   zookeeper:
     image: confluentinc/cp-zookeeper
@@ -62,9 +62,13 @@ services:
   command:
     build: ./command
     environment:
+      AMQP_URL: 'amqp://amqp:5672'
       KAFKA_URL: 'zookeeper:2181'
+      MONGO_URL: 'mongodb://mongo:27017'
     ports:
       - "3000:3000"
     depends_on:
-      - zookeeper
+#      - amqp
+      - broker
+      - mongo
     restart: on-failure

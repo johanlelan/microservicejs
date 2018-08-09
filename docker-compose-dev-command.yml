@@ -1,9 +1,9 @@
 version: '3'
 services:
-  mongodb:
+  mongo:
     image: mongo:latest
     ports:
-      - "27018:27017"
+      - "27017:27017"
     restart: on-failure
   zookeeper:
     image: confluentinc/cp-zookeeper

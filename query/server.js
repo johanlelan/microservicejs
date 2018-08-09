@@ -18,6 +18,8 @@ const readAPI = require('./src/interfaces/http/app');
 const publisher = Infrastructure.EventPublisher.create(Infrastructure.logger);
 const eventBus = Infrastructure.EventBus.create(concreteEvent);
 
+const SSEClients = require('./src/interfaces/http/utils/sse-clients');
+
 debug('Initializing query server...');
 
 // Mongodb states repository
@@ -46,17 +48,30 @@ require('./src/plugins/event-store.mongo')(Infrastructure.logger, process.env.MO
         state.apply(event);
       } else {
         // create new state
-        state = repository.getAggregate().createFromEvents([event]);
+        const Aggregate = await repository.getAggregate();
+        state = Aggregate.createFromEvents([event]);
       }
       // save newly state to DB
       stateRepository.save(state);
       return state;
     });
 
+    // Realtime updates
+    const sseClients = new SSEClients();
+    publisher.onAny(async (event) => {
+      // send event to all registered SSE Clients
+      sseClients.forEach((sseClient) => {
+        if (!sseClient.getAggregateId() || sseClient.getAggregateId() === event.aggregateId.id) {
+          return sseClient.send(event);
+        }
+        return sseClient;
+      });
+    });
+
     // connect to message broker
     eventBus.connect(publisher, repository, Infrastructure.logger, 'QUERY');
 
-    readAPI.run(repository, Infrastructure.logger, (errQuery) => {
+    readAPI.run(repository, Infrastructure.logger, sseClients, (errQuery) => {
       if (errQuery) { throw (errQuery); }
       Infrastructure.logger.info('[Query] HTTP API started');
     });

@@ -62,6 +62,7 @@ const KafkaService = {
           .from(`${topic}.events.out`)
           // {key: Buffer, value: Buffer} -> {key: string, value: Object}
           .mapJSONConvenience()
+          .tap(message => publisher.publish(message.value))
           .forEach(async (message) => {
             const event = message.value;
             if (typeof event !== 'object') {

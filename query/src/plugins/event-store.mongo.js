@@ -1,5 +1,5 @@
 
-const debug = require('debug')('microservice:command:plugins:repository:mongo');
+const debug = require('debug')('microservice:command:plugins:event-store:mongo');
 const MongoDB = require('mongodb');
 
 const AggregateNotFound = require('../modules/infrastructure/src/AggregateNotFound');
@@ -15,9 +15,12 @@ const EventStoreMongo = function EventStoreMongo(collection, logger) {
     const insertEvent = event;
     insertEvent._id = event.id;
     // insert into mongodb the given eventId
-    await collection.insertOne(insertEvent);
-    debug(`New event for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
-    return event;
+    return collection.insertOne(insertEvent)
+      .catch(error => logger.warn('Can not insert event', error))
+      .then(() => {
+        debug(`New event for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
+        return event;
+      });
   };
 
   function validate(event) {
@@ -86,7 +89,7 @@ const connectWithRetry = (mongoUrl, logger) => MongoDB.MongoClient.connect(mongo
   return db;
 }).catch((err) => {
   logger.error(`Failed to connect to MongoDB on startup - retrying in 5 sec. -> ${err}`);
-  setTimeout(() => connectWithRetry(mongoUrl), 5000);
+  setTimeout(() => connectWithRetry(mongoUrl, logger), 5000);
 });
 
 module.exports = (logger, mongoURL) => connectWithRetry(mongoURL, logger).then((connection) => {

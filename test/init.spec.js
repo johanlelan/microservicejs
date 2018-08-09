@@ -29,6 +29,7 @@ publisher.onAny(event => eventStore.append(event));
 
 let init = false;
 let ending = false;
+const sseClients = [];
 
 before((donePreparing) => {
   if (init) {
@@ -49,7 +50,7 @@ before((donePreparing) => {
           ).then(() =>
           // console.log('[HTTP] start express app');
             readAPI.run(
-              repository, logger,
+              repository, logger, sseClients,
               (err) => {
                 if (err) {
                   donePreparing(err);
@@ -77,7 +78,7 @@ after((doneCleaning) => {
     process.env.API_PORT = 3004;
     return eventMessaging.connect(publisher, repository, logger)
       .then(bus => bus.createChannel())
-      .then(() => readAPI.run(repository, logger, (errREAD) => {
+      .then(() => readAPI.run(repository, logger, sseClients, (errREAD) => {
         ending = true;
         return doneCleaning(errREAD);
       }))
