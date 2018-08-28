@@ -8,7 +8,9 @@ const StateRepositoryMongo = function StateRepositoryMongo(collection, Aggregate
   this.save = async function save(aggregate) {
     logger.info('Save new state into DB', aggregate);
     const insertAggregate = aggregate;
-    insertAggregate._id = aggregate.id;
+    insertAggregate._id = aggregate &&
+      aggregate.aggregateId &&
+      aggregate.aggregateId.id;
     // insert into mongodb the given eventId
     return collection.insertOne(insertAggregate)
       .catch(error => logger.warn('Can not insert state', error))

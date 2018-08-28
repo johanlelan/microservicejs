@@ -62,17 +62,8 @@ const KafkaService = {
           .from(`${topic}.events.out`)
           // {key: Buffer, value: Buffer} -> {key: string, value: Object}
           .mapJSONConvenience()
-          .tap(message => publisher.publish(message.value))
-          .forEach(async (message) => {
-            const event = message.value;
-            if (typeof event !== 'object') {
-              logger.info('[Kafka] Can not process message, it is not an object.', message);
-              return message;
-            }
-            // save incoming event
-            await repository.save(event);
-            return message;
-          });
+          .filter(message => !Buffer.isBuffer(message.value))
+          .forEach(message => publisher.publish(message.value));
         stream.start();
       }
     });

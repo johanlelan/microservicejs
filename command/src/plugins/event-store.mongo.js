@@ -16,7 +16,7 @@ const EventStoreMongo = function EventStoreMongo(collection, logger) {
     insertEvent._id = event.id;
     // insert into mongodb the given eventId
     await collection.insertOne(insertEvent);
-    debug(`New event for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
+    debug(`New event ${insertEvent.id} for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
     return event;
   };
 

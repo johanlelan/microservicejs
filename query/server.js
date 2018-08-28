@@ -76,3 +76,8 @@ require('./src/plugins/event-store.mongo')(Infrastructure.logger, process.env.MO
       Infrastructure.logger.info('[Query] HTTP API started');
     });
   });
+
+process.on('unhandledRejection', (error) => {
+  // This prints error with stack included (as for normal errors)
+  Infrastructure.logger.error(error);
+});

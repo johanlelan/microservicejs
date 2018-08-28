@@ -5,7 +5,7 @@ const { KafkaStreams } = require('kafka-streams');
 const topic = 'demandes-financement';
 
 const KafkaService = {
-  connect: (publisher, repository, logger, mode) => {
+  connect: async (publisher, repository, logger, mode) => {
     const zkOptions = {
       sessionTimeout: 300,
       spinDelay: 100,
@@ -62,30 +62,8 @@ const KafkaService = {
           .from(`${topic}.events.out`)
           // {key: Buffer, value: Buffer} -> {key: string, value: Object}
           .mapJSONConvenience()
-          .forEach(async (message) => {
-            const event = message.value;
-            if (typeof event !== 'object') {
-              logger.info('[Kafka] Can not process message, it is not an object.', message);
-              return message;
-            }
-            const type = event.type || '';
-            const aggregateId = event.aggregateId && event.aggregateId.id;
-            logger.info(`[Kafka] Apply event ${type} on current DB state of Aggregate ${aggregateId}`);
-            let state;
-            if (type.indexOf('Created') === -1) {
-              // get current state
-              state = await repository.getById(event.aggregateId);
-              // apply new event
-              state.apply(event);
-            } else {
-              // create new state
-              state = repository.getAggregate().createFromEvents([event]);
-            }
-            // save newly state to DB
-            repository.save(state);
-
-            return state;
-          });
+          .filter(message => !Buffer.isBuffer(message.value))
+          .forEach(message => publisher.publish(message.value));
         stream.start();
       }
     });

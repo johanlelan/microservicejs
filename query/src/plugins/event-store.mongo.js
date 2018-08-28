@@ -18,7 +18,7 @@ const EventStoreMongo = function EventStoreMongo(collection, logger) {
     return collection.insertOne(insertEvent)
       .catch(error => logger.warn('Can not insert event', error))
       .then(() => {
-        debug(`New event for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
+        debug(`New event ${insertEvent.id} for Aggregate ${insertEvent.aggregateId.id} saved in ${collection.collectionName}`);
         return event;
       });
   };

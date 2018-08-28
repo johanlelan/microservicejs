@@ -34,8 +34,8 @@ class SSEConnection {
 
   send(data) {
     debug(`send event to SSE stream ${JSON.stringify(data)}`);
-    this.res.write(`id: ${data.id}\n`);
     this.res.write(`event: ${data.type}\n`);
+    this.res.write(`id: ${data.id}\n`);
     this.res.write(`data: ${JSON.stringify(data)}\n\n`);
   }
 }
