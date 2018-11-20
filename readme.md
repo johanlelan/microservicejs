@@ -1,4 +1,10 @@
-# Application flow on the write side
+# sandbox for DDD, CQRS and Event-store
+
+Use MongoDB, RabbitMQ or Kafka as event-store.
+
+=> First use of event-stream on top of kafka-stream
+
+## Application flow on the write side
 
 1. UI
     1. Command is an object sent by the user (from the UI) that will modify an aggregate
